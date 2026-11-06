@@ -1,0 +1,4 @@
+# TAPlite environment: main_replay.py only
+# Windows x64, Python 3.11. Must match code/setup/taplite_pypi_lock.json, or the kit
+# refuses to run the assignment.
+taplite4mpo-pre-release==0.4.0rc1

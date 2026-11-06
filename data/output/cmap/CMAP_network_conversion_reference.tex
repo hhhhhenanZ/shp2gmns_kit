@@ -1,0 +1,522 @@
+\documentclass[9pt,a4paper]{extarticle}
+
+\usepackage[margin=1.6cm,top=1.6cm,bottom=1.6cm]{geometry}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{amsmath}
+\usepackage[expansion=false]{microtype}
+\usepackage[colorlinks=true,linkcolor=black,urlcolor=blue]{hyperref}
+\usepackage{titlesec}
+
+\definecolor{srcblue}{RGB}{20,70,140}
+
+\newcommand{\C}[1]{\texttt{\small\detokenize{#1}}}
+% \leavevmode required: a \color starting a p{} cell otherwise drops the first line.
+\newcommand{\src}[1]{\leavevmode{\footnotesize\color{srcblue}\textsf{#1}}}
+
+\titleformat{\section}{\normalsize\bfseries}{\thesection}{0.5em}{}
+\titlespacing{\section}{0pt}{8pt}{3pt}
+
+\setlength{\tabcolsep}{4pt}
+\setlength{\parindent}{0pt}
+\renewcommand{\arraystretch}{1.1}
+\sloppy
+\pagestyle{plain}
+
+\begin{document}
+
+\begin{center}
+{\large\bfseries CMAP Emme $\rightarrow$ GMNS/TAPLite Conversion --- Quick Reference}\\[2pt]
+{\footnotesize Conformity cycle \C{c25q4}, scenario 100 (2019 base year) \quad$\cdot$\quad PM period (Emme period 7, 4--6 pm)
+\quad$\cdot$\quad 55{,}005 Emme links $\rightarrow$ 55{,}005 GMNS links \quad$\cdot$\quad 3{,}649 zones \quad$\cdot$\quad 27 Oct 2026}
+\end{center}
+\vspace{-4pt}
+
+% ===================================================================
+\section{Inputs $\rightarrow$ code $\rightarrow$ outputs}
+
+\begin{tabular}{@{}p{0.33\textwidth}p{0.29\textwidth}p{0.34\textwidth}@{}}
+\toprule
+\textbf{INPUT} & \textbf{CODE} & \textbf{OUTPUT} \\
+\midrule
+\C{highwayshp_pmpk/emme_links.shp}\newline\C{highwayshp_pmpk/emme_nodes.shp}\newline\C{ .dbf .shx .prj .cpg} &
+\C{cmap_emme/emme_read.py}\newline\C{cmap_emme/network.py} &
+\C{network/PM/node.csv}\newline\C{network/PM/link.csv}\newline\C{network/link_geometry.csv} \\
+\addlinespace
+\C{emmenet_highway/attribs_p7.txt}\newline(\C{@speed @ftime @emcap @toll}\dots) &
+\C{cmap_emme/vdf.py}\newline\C{cmap_emme/access.py} &
+capacity, free-flow, VDF, \C{allowed_use}\newline\C{parameters/vdf_parameters.csv} \\
+\addlinespace
+\C{c25q4_100/emmemat_c25q4_100.zip}\newline(\C{.emx}, read in place) &
+\C{cmap_emme/demand.py} &
+\C{demand/PM/sov_PM.csv} \dots\ (8 files)\newline\C{parameters/mode_type_by_period.csv} \\
+\addlinespace
+\C{emmenet_highway/network_p7.txt} & \C{cmap_emme/checks.py} &
+\C{checks/gate_report.csv} (cross-check only) \\
+\bottomrule
+\end{tabular}
+
+\smallskip
+\begin{tabular}{@{}ll@{}}
+Driver & \C{python code/main_convert.py --region region.cmap.yaml --periods PM} \quad(\C{--skip-demand}: network only) \\
+Code root & \C{shp2gmns_replay_kit/code/src/cmap_emme/}; every CMAP number lives in \C{region.cmap.yaml} \\
+Output root & \C{shp2gmns_replay_kit/data/output/cmap/}; gates: 29 PASS, 0 FAIL, 17 INFO \\
+\end{tabular}
+
+% ===================================================================
+\section{Source tags used below}
+
+\begin{tabular}{@{}lp{0.40\textwidth} lp{0.38\textwidth}@{}}
+\toprule
+\src{[G]} & CMAP Travel Demand Model Data User Guide (c25q4), in the data package:
+\href{https://datahub.cmap.illinois.gov/documents/a14d641dbe184704ab597479b103986c/explore}{CMAP Data Hub} &
+\src{[FT]} & \C{Database/macros/Ftime_capacity.py} (\C{@ftime}, \C{@emcap}) \\
+\src{[A]} & ON TO 2050 travel demand model appendix:
+\href{https://cmap.illinois.gov/wp-content/uploads/ON-TO-2050-Update-Travel-Demand-Model-Documentation-Appendix.pdf}{cmap.illinois.gov} (printed pages) &
+\src{[TOD]} & \C{Database/macros/TOD_network_prep.py} (VDF inputs ul1--ul3) \\
+\src{[VDF]} & \C{Database/data/vdf_tod.in} (functions fd1--fd8 as run) &
+\src{[TT]} & \C{Database/macros/ttables.mac} (period trip tables) \\
+\src{[TF]} & \C{Database/data/tod_factors.p7} (PM factors r19--r26) &
+\src{[FL]} & \C{Database/data/tod_flags.in} (airport and CBD zone flags) \\
+\src{[SOLA]} & \C{Database/macros/SOLA_assignment.py} (toll as link cost) &
+\src{[Y]} & \C{region.cmap.yaml} \\
+\src{[m]} & measured from the c25q4 PM files &
+ & \\
+\bottomrule
+\end{tabular}
+
+\smallskip
+Code files are from
+\href{https://github.com/CMAP-REPOS/cmap_trip-based_model}{\C{CMAP-REPOS/cmap_trip-based_model}}, commit \C{e52b318} (2026-04-30);
+copies in \C{data/input/cmap/docs/cmap_code/}.
+
+% ===================================================================
+\section{The input files at a glance}
+
+\begin{tabular}{@{}p{0.47\textwidth}p{0.50\textwidth}@{}}
+\toprule
+\textbf{Facts} \src{[m]} & \textbf{What it actually is} \\
+\midrule
+55{,}005 directed links, 20{,}190 nodes; no duplicate $(i,j)$ &
+Emme PM-peak network exported to shapefile \src{[G]} \\
+Zones 1--3649, contiguous, \C{ISZONE = 1}; node $<5000$ is a centroid &
+Zones already come first: \textbf{no renumbering} \\
+CRS NAD27 / Illinois East, US survey feet (EPSG:26771) $\rightarrow$ EPSG:4326 &
+\src{[A] T19 p.48}; model area includes Winnebago Co., NW Indiana, SE Wisconsin \\
+Shapefile has \textbf{no} capacity, speed or free-flow time &
+These are in \C{attribs_p7.txt}; joined on $(i,j)$: 55{,}005 / 55{,}005 \\
+\C{DATA1} $=$ \C{@vadt}; \C{TIMAU} $=$ \C{timau} on every link &
+CMAP's assigned PM volume and congested time \\
+\bottomrule
+\end{tabular}
+
+\smallskip
+\begin{tabular}{@{}p{0.13\textwidth}p{0.84\textwidth}@{}}
+\toprule
+\textbf{Used} & shapefile \C{ID} \C{INODE} \C{JNODE} \C{LENGTH} \C{MODES} \C{LANES} \C{VDF} \C{DATA1} \C{TIMAU};
+attribs \C{@speed} \C{@ftime} \C{@emcap} \C{@toll} \C{@tipid} \C{@width} \C{@parkl} \C{@sigic} \C{@vadt} \C{timau} \\
+\textbf{Ignored} & \C{TYPE} (always 1), \C{VOLAU} / \C{VOLAD} (\textbf{not volumes}: median 3{,}648), \C{DATA2} \C{DATA3} (all 0),
+\C{@avelw} (same kind as \C{@width}), \C{emme_turns.dbf} (turns, not converted) \\
+\bottomrule
+\end{tabular}
+
+% ===================================================================
+\section{Code tables}
+
+\begin{minipage}[t]{0.50\textwidth}
+\textbf{\C{VDF} --- volume-delay function code} \src{[A] T18 p.47, [G]}\\[2pt]
+\begin{tabular}{@{}clrr@{}}
+\toprule
+\textbf{Code} & \textbf{Meaning} & \textbf{Links} & \textbf{PM VMT} \\
+\midrule
+1 & Arterial street & 41{,}861 & 16{,}836{,}841 \\
+2 & Freeway & 1{,}998 & 10{,}565{,}352 \\
+3 & Freeway $\rightarrow$ arterial ramp & 1{,}992 & 364{,}490 \\
+4 & Expressway & 930 & 1{,}436{,}129 \\
+5 & Freeway $\rightarrow$ freeway ramp & 664 & 338{,}540 \\
+6 & Zone centroid connector & 7{,}264 & 3{,}893{,}909 \\
+7 & Toll collection link & 188 & 67{,}954 \\
+8 & Metered entrance ramp & 108 & 19{,}478 \\
+\midrule
+ & \textbf{total} & \textbf{55{,}005} & \textbf{33{,}522{,}694} \\
+\bottomrule
+\end{tabular}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.47\textwidth}
+\textbf{\C{MODES} letters} \src{[A] T18 p.47}\\[3pt]
+A primary auto, S SOV, H HOV, T general truck, b B-plate truck, l light, m medium, h heavy.
+
+\smallskip
+\textbf{B-plate} \src{[A] p.111}: vans, pickups and SUVs under 8{,}000 lb carrying ``B'' plates;
+only their commercial use (personal use is in household trips).
+
+\smallskip
+\textbf{Mode codes} (= OD vehicle classes) \src{[Y] access}: A $\rightarrow$ \C{sov;apv}, S $\rightarrow$ \C{sov},
+H $\rightarrow$ \C{hov2;hov3}, b $\rightarrow$ \C{btrk}, l $\rightarrow$ \C{ltrk}, m $\rightarrow$ \C{mtrk},
+h $\rightarrow$ \C{htrk}; T adds nothing.
+\end{minipage}
+
+\medskip
+\textbf{\C{MODES} $\rightarrow$ \C{allowed_use}} (NVTA convention: mode codes, \C{;}-separated)
+
+\begin{tabular}{@{}lp{0.45\textwidth}rp{0.28\textwidth}@{}}
+\toprule
+\textbf{MODES} & \textbf{\C{allowed_use} written} & \textbf{Links} & \textbf{Meaning} \\
+\midrule
+\C{ASHThmlb} & \C{sov;hov2;hov3;apv;btrk;ltrk;mtrk;htrk} & 50{,}274 & all vehicles \\
+\C{ASHTb} & \C{sov;hov2;hov3;apv;btrk} & 1{,}995 & autos and B-plate only \\
+\C{ASH} & \C{sov;hov2;hov3;apv} & 1{,}518 & no trucks \\
+\C{ASHTlb} & \C{sov;hov2;hov3;apv;btrk;ltrk} & 875 & no medium or heavy \\
+\C{ASHTmlb} & \C{sov;hov2;hov3;apv;btrk;ltrk;mtrk} & 343 & no heavy \\
+\bottomrule
+\end{tabular}
+
+\smallskip
+Every PM link carries A, S and H (no HOV-only lanes); no link is \C{closed}.
+
+% ===================================================================
+\section{Master lookup: free-flow time, capacity, VDF}
+
+\textbf{Free-flow time \C{@ftime}} \src{[FT]}: \C{@speed} is rounded \textbf{up} to a bin, then
+$\C{@ftime} = \C{length}\,/\,\text{bin speed}\times60$. The converter uses \C{@ftime} as given; recomputed
+from \C{@speed} it matches on 100\% of VDF 1--6, 8 links \src{[m]}.
+
+\smallskip
+\begin{tabular}{@{}lp{0.30\textwidth}p{0.27\textwidth}p{0.30\textwidth}@{}}
+\toprule
+\textbf{VDF} & \textbf{Speed bins (mph)} & \textbf{Extra} & \textbf{\C{@ftime}$\ne$\C{LENGTH/@speed}} \src{[m]} \\
+\midrule
+2, 4 & 40, 45, 50, 55, 60, 65 ($\le$40$\rightarrow$40, $>$60$\rightarrow$65) & --- & 520 (e.g.\ fwy 70$\rightarrow$65; xwy 25--35$\rightarrow$40) \\
+1 & 15, 20, \dots, 50, 55 ($>$50$\rightarrow$55) & signal delay later, in fd1 & 0 \\
+3, 5, 8 & 15, 20, \dots, 45, 50 ($>$45$\rightarrow$50) & VDF 8: $+0.083$ min (5-s meter delay) & 220 (ramps 55--65$\rightarrow$50; VDF 8) \\
+6 & --- & $\C{@ftime} = \C{length}\times3$ (20 mph) & --- \\
+7 & --- & posted speed of the incoming link & 1 \\
+\bottomrule
+\end{tabular}
+
+\medskip
+\begin{minipage}[t]{0.50\textwidth}
+\textbf{Capacity \C{@emcap}} (veh/h/\textbf{lane}, LOS E) \src{[FT], [G]}\\[2pt]
+\begin{tabular}{@{}clrrr@{}}
+\toprule
+\textbf{VDF} & \textbf{Facility} & \textbf{Median} & \textbf{Range} & \textbf{Values} \\
+\midrule
+1 & arterial & 790 & 288--1{,}449 & 254 \\
+2 & freeway & 2{,}000 & 1{,}140--2{,}000 & 7 \\
+3 & fwy$\rightarrow$art ramp & 1{,}450 & 620--1{,}600 & 8 \\
+4 & expressway & 1{,}700 & 1{,}020--2{,}000 & 16 \\
+5 & fwy$\rightarrow$fwy ramp & 1{,}450 & 1{,}060--1{,}600 & 6 \\
+8 & metered ramp & 720 & 720 & 1 \\
+6, 7 & connector, toll & \multicolumn{3}{l}{0 in CMAP $\rightarrow$ 99{,}999 placeholder} \\
+\bottomrule
+\end{tabular}
+
+\smallskip
+Freeway \C{@emcap} is 2{,}000 for every lane count 1--7, so it is per lane. Arterial capacity depends on the
+downstream intersection (approaches, lane width, functional class) \src{[FT] l.250--330}.
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.46\textwidth}
+\textbf{VDF inputs as CMAP runs them} \src{[TOD], [VDF]}\\[2pt]
+\begin{tabular}{@{}lp{0.70\linewidth}@{}}
+\toprule
+\C{ul1} & \C{@ftime} \\
+\C{ul2} & $0.75\times\C{@emcap}\times\C{lanes}\times H$ on \textbf{VDF 1--5};\newline
+$\C{@emcap}\times\C{lanes}\times H$ on VDF 8; PM $H=2$ \\
+\C{ul3} & signal cycle and $g/C$ (VDF 1, 3); \textbf{not exported} \\
+$v$ & \C{volau + el2}: vehicle equivalents plus bus veq \\
+\bottomrule
+\end{tabular}
+
+\smallskip
+\src{[A] p.123} names the 0.75 only for arterials; the code applies it to VDF 1--5, and the code is followed.
+\end{minipage}
+
+\medskip
+\textbf{Functions} \src{[VDF]} and reproduction of CMAP's \C{timau} with $v=\C{DATA1}$ \src{[m]}
+
+\begin{tabular}{@{}clp{0.47\textwidth}rl@{}}
+\toprule
+\textbf{VDF} & \textbf{Name} & \textbf{fd (as run)} & \textbf{Median err.} & \textbf{TAPLite form} \\
+\midrule
+1, 3 & arterial, ramp & $u_1[1+0.15(v/u_2)^4]$ + Webster uniform + incremental delay from $u_3$, capped at one cycle & $-21.8\%$, $-0.04\%$ & open \\
+2 & freeway & $[1+0.15\min(v/u_2,1)]\,(u_1/1.15)\,[1+0.15(v/(u_2+300))^8]$ & $-9.5\%$ & open \\
+4 & expressway & $[1+0.15\min(v/u_2,1)]\,u_1\,[1+0.15(v/u_2)^8]$ & $-1.3\%$ & open \\
+5 & fwy$\rightarrow$fwy ramp & $u_1[1+0.15(v/u_2)^8]$ & $-0.04\%$ & open \\
+6 & connector & $\C{length}\times3$ & $0.0\%$ & type 0, $\alpha=0$ \\
+7 & toll link & $u_1$ & $0.0\%$ & type 0, $\alpha=0$ \\
+8 & metered ramp & $u_1[1+0.15(v/u_2)^{10}]$ & $-0.04\%$ & open \\
+\bottomrule
+\end{tabular}
+
+\smallskip
+The remaining error is the volume: \C{DATA1} is vehicles, CMAP's $v$ is vehicle and bus equivalents. VDF 1
+misses the signal delay (\C{@cycle}, \C{@gc} not exported). The TAPLite form for VDF 1--5, 8 is chosen in the replay step,
+so \C{vdf_type}, \C{vdf_alpha}, \C{vdf_beta} are blank on those links.
+
+\newpage
+% ===================================================================
+\section{\C{node.csv}}
+
+\begin{tabular}{@{}p{0.13\textwidth}p{0.36\textwidth}p{0.46\textwidth}@{}}
+\toprule
+\textbf{Column} & \textbf{From} & \textbf{Rule} \src{[Y], network.py} \\
+\midrule
+\C{node_id} & \C{emme_nodes.dbf ID} & Emme node number, unchanged \\
+\C{zone_id} & \C{ISZONE} & $=$ \C{node_id} where \C{ISZONE = 1} (1--3649); else blank \\
+\C{x_coord} & \C{X} (US survey ft) & EPSG:26771 $\rightarrow$ EPSG:4326, degrees \\
+\C{y_coord} & \C{Y} (US survey ft) & same \\
+\C{node_type} & \C{ISZONE} & \C{centroid} or \C{road} \\
+\C{cmap_label} & \C{LABEL} & as given \\
+\bottomrule
+\end{tabular}
+
+\smallskip
+20{,}190 rows; 3{,}649 centroids. Reprojection: pyproj when installed; otherwise a built-in inverse Transverse
+Mercator (Clarke 1866) plus Molodensky NAD27 $\rightarrow$ WGS84, checked against a pyproj-based CMAP--OSM match:
+median 2.11 m vs 2.12 m \src{[m]}.
+
+% ===================================================================
+\section{\C{link.csv}}
+
+\begin{longtable}{@{}p{0.165\textwidth}p{0.33\textwidth}p{0.10\textwidth}p{0.35\textwidth}@{}}
+\toprule
+\textbf{Column} & \textbf{Formula} & \textbf{Unit} & \textbf{Note} \\
+\midrule
+\endhead
+\C{link_id} & row number $1..N$ & --- & shapefile order \\
+\C{from_node_id} & \C{INODE} & --- & \\
+\C{to_node_id} & \C{JNODE} & --- & \\
+\C{dir_flag} & 1 & --- & Emme links are directed \\
+\C{length} & \C{LENGTH} $\times$ 1609.344 & \textbf{meter} & source is miles \src{[A] T18} \\
+\C{lanes} & \C{LANES} & --- & $\ge1$ on every link \\
+\C{capacity} & \C{@emcap}; 99{,}999 on VDF 6, 7 & \textbf{veh/h}\newline\textbf{/lane} & \S5; placeholder \S11 \\
+\C{free_speed} & \C{vdf_free_speed_mph} $\times$ 1.609344 & \textbf{kph} & from \C{@ftime}, not \C{@speed} \\
+\C{toll} & \C{@toll} & \textbf{dollar}\newline\textbf{/link} & CMAP adds it unchanged as link cost \src{[SOLA]} \\
+\C{link_type} & \C{VDF} & --- & $=$ \C{vdf_code} \\
+\C{allowed_use} & \C{MODES} $\rightarrow$ mode codes & --- & \S4 \\
+\C{vdf_type} & 0 on VDF 6, 7; blank otherwise & --- & replay step \\
+\C{vdf_alpha} & 0 on VDF 6, 7; blank otherwise & --- & \\
+\C{vdf_beta} & 1 on VDF 6, 7; blank otherwise & --- & \\
+\C{vdf_plf} & 1.0 & --- & period cap $=$ \C{@emcap}$\times$lanes$\times$2 \src{[G]} \\
+\C{ref_volume} & \C{DATA1} ($=$ \C{@vadt}) & \textbf{veh /}\newline\textbf{2-h period} & CMAP assigned PM volume, not per hour \\
+\C{ref_time} & \C{TIMAU} ($=$ \C{timau}) & \textbf{minute} & VDF time at that volume, \S7 note \\
+\C{vdf_free_speed_mph} & \C{LENGTH} $/$ \C{@ftime} $\times$ 60 & \textbf{mph} & binned speed \src{[FT]} \\
+\C{vdf_length_mi} & \C{LENGTH} & \textbf{mile} & \\
+\C{vdf_fftt} & \C{@ftime} & \textbf{minute} & as given \src{[FT]} \\
+\C{org_link_id} & \C{ID} (\C{"i-j"}) & --- & \\
+\C{vdf_code} & \C{VDF} & --- & 1--8 \\
+\C{facility_type} & name of the VDF code & --- & \S4 \\
+\C{capacity_source} & \C{cmap_emcap} / \C{placeholder_no_constraint} & --- & filter before D/C \\
+\C{hourly_link_capacity} & \C{capacity} $\times$ \C{lanes} & veh/h/link & \\
+\C{tipid} \C{width}\newline\C{parkl} \C{sigic} & \C{@tipid} \C{@width} \C{@parkl} \C{@sigic} & ---, ft,\newline count, 0/1 & CMAP names without \C{@} \\
+\C{timau} & \C{TIMAU} & minute & same as \C{ref_time}, CMAP's name \\
+\bottomrule
+\end{longtable}
+
+\vspace{-4pt}
+\begin{minipage}[t]{0.47\textwidth}
+\textbf{Unit contract} (kit convention, \C{dtalite4cube/unit_contract.py})\\[2pt]
+\begin{tabular}{@{}l@{~$=$~}l@{}}
+\toprule
+\C{length} & \C{vdf_length_mi} $\times$ 1609.344 \\
+\C{free_speed} & \C{vdf_free_speed_mph} $\times$ 1.609344 \\
+\C{vdf_fftt} & $60\times$\C{vdf_length_mi}$/$\C{vdf_free_speed_mph} \\
+\bottomrule
+\end{tabular}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.49\textwidth}
+\textbf{What \C{ref_time} / \C{timau} is} \src{[G], [VDF]}\\[2pt]
+CMAP runs a \emph{static} equilibrium assignment per period. Every link ends with one volume (\C{DATA1}, whole 2 h)
+and the VDF time at that volume. One time for 4--6 pm at the period-average flow rate: no change within the period,
+no queue spillback. A model output (``raw model results'' \src{[G]}). 2{,}823 links carry zero volume and keep free-flow time.
+\end{minipage}
+
+\newpage
+% ===================================================================
+\section{Demand}
+
+Built as CMAP's \C{ttables.mac} builds the period-7 tables \src{[TT]}; factors \src{[TF]} $=$ \src{[G]} ``Daily truck
+and external trip time-of-day conversion'', TOD7. Each \C{.emx} is float32, $3649\times3649$, no header.
+
+\smallskip
+\begin{tabular}{@{}llp{0.33\textwidth}rrrr@{}}
+\toprule
+\textbf{mode} & \textbf{File} & \textbf{Rule} \src{[TT] line} & \textbf{PM veh} & \textbf{Rows} & \textbf{Kept} & \textbf{MB} \\
+\midrule
+\C{sov} & \C{sov_PM.csv} & mf417 $+$ mf427 $+$ mf437 $+\;0.155\times$mf8 (l.392--444) & 2{,}393{,}513 & 818{,}885 & 100.0\% & 10.1 \\
+\C{hov2} & \C{hov2_PM.csv} & mf447 & 513{,}112 & 342{,}932 & 100.0\% & 4.3 \\
+\C{hov3} & \C{hov3_PM.csv} & mf457 & 141{,}612 & 204{,}014 & 100.0\% & 3.6 \\
+\C{apv} & \C{apv_PM.csv} & $0.155\times$mf10, airport rule (l.464--465) & 11{,}839 & 26{,}944 & 99.9\% & 0.5 \\
+\C{btrk} & \C{btrk_PM.csv} & $0.176\times$mf4 (l.601) & 307{,}563 & 1{,}338{,}781 & 96.5\% & 25.1 \\
+\C{ltrk} & \C{ltrk_PM.csv} & $0.176\times$mf5 (l.626) & 51{,}627 & 718{,}863 & 71.9\% & 13.7 \\
+\C{mtrk} & \C{mtrk_PM.csv} & $0.176\times$mf6 (l.658) & 48{,}066 & 664{,}820 & 70.9\% & 12.7 \\
+\C{htrk} & \C{htrk_PM.csv} & $0.103\times$mf7 $+\;0.103\times$mf9 (l.684--685) & 60{,}398 & 659{,}707 & 87.6\% & 12.7 \\
+\midrule
+ & & \textbf{total} & \textbf{3{,}527{,}730} & \textbf{4{,}774{,}946} & \textbf{98.7\%} & \textbf{82.7} \\
+\bottomrule
+\end{tabular}
+
+\smallskip
+\begin{tabular}{@{}p{0.16\textwidth}p{0.81\textwidth}@{}}
+\toprule
+Format & \C{o_zone_id,d_zone_id,volume}; zone ids 1--3649 $=$ centroid \C{node_id}; \textbf{vehicles per 2-h period}; intrazonal cells kept. \\
+Floor & cells $\le0.01$ not written, \textbf{not rescaled} (first version); kept share per mode in \C{parameters/demand_summary.csv}. \\
+PM autos & mf417--mf457 are PM vehicle trips from CMAP's demand model (\C{mf41y..mf45y}, $y=7$); PM2 $=$ period 7
+(\C{setup_transit_asmt_3_TOD_transit_demand.py}). mf417$+$mf427$+$mf437 $=$ 2{,}351{,}437 $=$ \C{trip_roster} PM2 mode 1 \src{[m]}. \\
+Airport & \src{[FL]}: O'Hare 123--127, 129, 130; Midway 494; 1733, 1734, 1969, 2907 flagged $\ge2$; CBD 1--47 flagged 1.
+Kept: to an airport, or from an airport to an unflagged zone. CMAP folds these into SOV; here \C{apv} (our choice). \\
+Trucks & CMAP converts to veq inside \C{ttables.mac} (medium $\times2$, heavy $\times3$); here vehicles, with the factor in \C{pce}.
+mf9 into heavy: ``externals, which are assumed to be primarily heavy trucks'' \src{[TT] l.676}. \\
+Not included & park-and-ride first legs (mf59, built inside CMAP's run); bus veq (a link preload, replay step). \\
+Do not use & emmemat mf94--mf97, mf14--mf18 hold period 8 (the last assigned), e.g.\ mf14 $=0.152\times$mf4. \\
+\bottomrule
+\end{tabular}
+
+% ===================================================================
+\section{\C{mode_type.csv} values (\C{parameters/mode_type_by_period.csv})}
+
+\begin{minipage}[t]{0.52\textwidth}
+\begin{tabular}{@{}clrrrl@{}}
+\toprule
+\textbf{id} & \textbf{mode\_type} & \textbf{vot} & \textbf{pce} & \textbf{occ} & \textbf{demand\_file} \\
+\midrule
+1 & \C{sov}  & 20.49 & 1 & 1 & \C{sov_PM.csv} \\
+2 & \C{hov2} & 20.25 & 1 & 2 & \C{hov2_PM.csv} \\
+3 & \C{hov3} & 31.50 & 1 & 3.36 & \C{hov3_PM.csv} \\
+4 & \C{apv}  & 30.00 & 1 & 1 & \C{apv_PM.csv} \\
+5 & \C{btrk} & 24.00 & 1 & 1 & \C{btrk_PM.csv} \\
+6 & \C{ltrk} & 32.00 & 1 & 1 & \C{ltrk_PM.csv} \\
+7 & \C{mtrk} & 47.00 & 2 & 1 & \C{mtrk_PM.csv} \\
+8 & \C{htrk} & 52.00 & 3 & 1 & \C{htrk_PM.csv} \\
+\bottomrule
+\end{tabular}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.44\textwidth}
+\begin{tabular}{@{}p{0.12\linewidth}p{0.84\linewidth}@{}}
+\toprule
+\C{vot} & \$/h, \src{[TT]} r100--r114 $\times$ perception factors. \C{sov}: PM-trip-weighted mean of
+VOT1 $2.3\times2.25$, VOT2 $7.2\times2.25$, VOT3 $24\times2.00$ (externals split 0.10/0.45/0.45, r61--r63). \\
+\C{pce} & medium 2, heavy 3: CMAP's veq \src{[TT], [A] p.122}. \\
+\C{occ} & HOV3+ 3.36 \src{[G]}; others definitional. \\
+\bottomrule
+\end{tabular}
+\end{minipage}
+
+\smallskip
+One \C{sov} class replaces CMAP's three VOT classes; this matters only on the 198 tolled links.
+
+\newpage
+% ===================================================================
+\section{Worked example: link \C{3634} $\rightarrow$ \C{11223}}
+
+Freeway leaving external zone 3634 (north edge of the model area, Wisconsin). All values are the actual file values \src{[m]}.
+
+\begin{minipage}[t]{0.30\textwidth}
+\textbf{1. Source rows}\\[2pt]
+\begin{tabular}{@{}lr@{}}
+\toprule
+\C{ID} & 3634-11223 \\
+\C{LENGTH} & 0.58 \\
+\C{LANES} & 3 \\
+\C{VDF} & 2 \\
+\C{MODES} & \C{ASHThmlb} \\
+\C{DATA1} & 4605.3213 \\
+\C{TIMAU} & 0.521654 \\
+\midrule
+\C{@speed} & 65 \\
+\C{@ftime} & 0.535385 \\
+\C{@emcap} & 2000 \\
+\C{@toll} & 0 \\
+\bottomrule
+\end{tabular}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.66\textwidth}
+\textbf{2. \C{node.csv}}\\[2pt]
+\begin{tabular}{@{}rlrrl@{}}
+\toprule
+\C{node_id} & \C{zone_id} & \C{x_coord} & \C{y_coord} & \C{node_type} \\
+\midrule
+3634 & 3634 & $-87.920880$ & 42.966647 & centroid \\
+11223 & \textit{blank} & $-87.932119$ & 42.965410 & road \\
+\bottomrule
+\end{tabular}
+
+\smallskip
+\textbf{4. Demand} --- zone 3634 $\rightarrow$ 3636 (external $\rightarrow$ external, through trip)\\[2pt]
+\begin{tabular}{@{}lll@{}}
+\toprule
+\C{sov_PM.csv} & \C{3634,3636,402.734} & $=0.155\times$ mf8 (2{,}598.285) \\
+\C{htrk_PM.csv} & \C{3634,3636,114.696} & $=0.103\times$ mf9 (1{,}113.551) \\
+other modes & no row & mf417--457, mf4--7 are internal only \\
+\bottomrule
+\end{tabular}
+\end{minipage}
+
+\medskip
+\begin{minipage}{\textwidth}
+\textbf{3. \C{link.csv}}
+
+\begin{tabular}{@{}p{0.16\textwidth}p{0.32\textwidth}|p{0.17\textwidth}p{0.29\textwidth}@{}}
+\toprule
+\textbf{Column} & \textbf{How} & \textbf{Column} & \textbf{How} \\
+\midrule
+\C{link_id} & 3634 (row number) & \C{vdf_length_mi} & 0.58 \\
+\C{from_node_id} & 3634 & \C{vdf_fftt} & 0.535385 $=0.58/65\times60$ \\
+\C{to_node_id} & 11223 & \C{vdf_free_speed_mph} & 65.0 \\
+\C{length} & $0.58\times1609.344 = 933.42$ & \C{free_speed} & $65\times1.609344 = 104.6073$ \\
+\C{lanes} & 3 & \C{capacity} & 2000 (\C{cmap_emcap}) \\
+\C{link_type} & 2 (freeway) & \C{hourly_link_capacity} & 6000 \\
+\C{allowed_use} & \C{sov;hov2;hov3;apv;btrk;ltrk;mtrk;htrk} & \C{ref_volume} & 4605.3213 \\
+\C{vdf_type/alpha/beta} & blank (replay step) & \C{ref_time}, \C{timau} & 0.521654 \\
+\bottomrule
+\end{tabular}
+
+\smallskip
+\textbf{fd2 check:} $u_2 = 0.75\times2000\times3\times2 = 9{,}000$; $v/u_2 = 0.512$;
+$t = (1+0.15\times0.512)\times(0.535385/1.15)\times[1+0.15\times(4605.32/9300)^8] = 0.502$ min vs \C{TIMAU} 0.522
+($-3.9\%$: CMAP's $v$ counts trucks and buses as veq).
+\end{minipage}
+
+% ===================================================================
+\section{Gotchas}
+
+\begin{tabular}{@{}p{0.26\textwidth}p{0.71\textwidth}@{}}
+\toprule
+\C{@speed} $\ne$ speed in \C{@ftime} & \C{@ftime} uses \C{@speed} rounded up to a bin \src{[FT]}; 741 links differ
+(\C{checks/ftime_vs_posted_speed.csv}). \C{@speed} is not written. \\
+0.75 on VDF 1--5 & \src{[TOD]} applies it to all of VDF 1--5; \src{[A] p.123} names arterials only. Code followed. \\
+\C{/1.15} on freeways & applied inside fd2, not in \C{@ftime}. \\
+\C{VOLAU} in the shapefile & not a volume (median 3{,}648). Use \C{DATA1}. \\
+\C{@toll} is per link & \src{[A] T1}'s per-mile rate is the master-network field, converted before export; CMAP adds
+\C{@toll} unchanged \src{[SOLA]}. 198 tolled links: 188 VDF 7 (median \$0.70), 10 VDF 2 (median \$0.535). \\
+Connector capacity is 0 & VDF 6 and 7 have \C{@emcap = 0}; 99{,}999 placeholder with $\alpha=0$ (\C{region.cmap.yaml > vdf > no_capacity_links},
+CMAP only; NVTA uses 3{,}150, SCAG its own file). 7{,}452 links. \\
+Zone links $\ne$ connectors & 32 road links (VDF 1, 2, 4) leave external zones 3633--3649; they keep \C{@emcap}.
+Connectors are found by VDF 6, not by touching a zone. \\
+Toll links stay & in series on the tollways; deleting them drops 940 nodes and 1 zone from the connected network. \\
+emmemat period tables & mf94--97, mf14--18 are period 8, not PM. \\
+Trucks in veq & CMAP's tables are veq; here vehicles $+$ \C{pce}. \\
+Floor 0.01 & drops 28--29\% of light and medium trucks, 12\% of heavy; not rescaled (first version). \\
+Arterial delay & needs \C{@cycle}, \C{@gc}; not exported, so VDF 1 is $-22\%$. \\
+Base year & scenario 100 $=$ 2019; \C{c25q4_200} (2025) has the same file structure. \\
+No pyogrio / pyproj & built-in shapefile reader and reprojection are used; checked to 0.0 m median against pyproj. \\
+\bottomrule
+\end{tabular}
+
+% ===================================================================
+\section{Assignment test}
+
+The converted network and demand assign in TAPLite without changes (6 Nov 2026): PM, 5 classes (four car modes
+merged), BPR $\alpha=0.15$, $\beta=4$ on \C{@emcap} $\times$ lanes, no tolls, 10 iterations, gap 0.18\%. Against
+CMAP's \C{ref_volume} and \C{timau}, all links: VMT 0.925, VHT 0.710, delay 0.109; link volume $R^2$ 0.93 on
+road links. Results and the reading: \C{report/CMAP_progress_report.pdf}, sections 4--5. Inputs, run scripts
+and evaluation: \href{https://github.com/hhhhhenanZ/city-tensor/tree/main/cmap_ta_bpr_allmodes}{\C{city-tensor/cmap_ta_bpr_allmodes}}.
+
+\end{document}

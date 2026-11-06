@@ -1,0 +1,10 @@
+﻿vdf_code,name,variant,links,links_evaluated,median_rel_error,p90_abs_rel_error,timau_over_ftime_at_vc_below_0.1,note
+1,arterial street,as documented,41861,41861,-0.2179,0.5664,1.144,"BPR part only: intersection delay needs @gc, @cycle (not exported)"
+2,freeway,as documented,1998,1998,-0.0951,0.4162,0.886,
+2,freeway,without the /1.15 on T0,1998,1998,0.0407,0.3287,0.886,
+3,freeway-arterial ramp,as documented,1992,1992,-0.0004,0.401,1.0,"BPR part only: intersection delay needs @gc, @cycle (not exported)"
+4,expressway,as documented,930,930,-0.0131,0.1957,1.017,
+5,freeway-freeway ramp,as documented,664,664,-0.0004,0.1938,1.0,
+6,zone centroid connector,as documented,7264,7264,0.0,0.0,,fixed time
+7,toll collection link,as documented,188,188,0.0,0.0,,fixed time
+8,metered entrance ramp,as documented,108,108,-0.0004,0.1564,1.0,

@@ -1,0 +1,246 @@
+# =============================================================================
+#  region.yaml  —  the one file you edit  —  SCAG (TransCAD)
+# =============================================================================
+#  SCAG 2019 base-year Regional Travel Demand Model (RTP24): the loaded highway
+#  network exported from TransCAD to shapefile, and the five period vehicle trip
+#  tables exported to CSV. "model: transcad_scag" selects code/src/scag_transcad.
+#  The Cube/NVTA worked example is kept in region.nvta.example.yaml.
+#
+#  Paths are relative to this file. Sources quoted in the comments:
+#    [VR]  SCAG/SCAG Model Validation Report_Final RTP24.pdf (printed page numbers)
+#    [UG]  SCAG/User's Guide/.../data/05_ModelInputs_Networks.xlsx, 06_ModelParameters.xlsx
+#    [ND]  data/input/network/Data_Dictionary_loaded_network.xlsx
+#    [DD]  data/input/demand/Data_Dictionary_OD_Vehicle_trip_matrix.xlsx
+#    [SA]  SCAG's answers: SCAG/VDF_intro.png, capacity_time_period.png, on_ramp_parameters.png
+#    [TC]  TAPLite.cpp (TAPLite4MPO kernel): vdf_type 7 and 8
+#    [M]   measured from the loaded network: data/output/CONVERSION_REPORT.md
+# =============================================================================
+
+region:
+  name: SCAG
+  model: transcad_scag
+  description: SCAG 2019 Regional Travel Demand Model (RTP24), TransCAD loaded highway network
+  # Tier 1. The trip tables are keyed by Tier-1 TAZ id, so Tier-1 centroids (facility 100)
+  # carry the zone ids and the Tier-2 connectors (facility 200) are dropped with the nodes
+  # only they touch - see access > closed_facility_types and output > keep_closed_links.
+  zone_tier: 1
+
+# ---- where the files are ----------------------------------------------------
+input:
+  network_shapefile: data/input/network/scag_network_Full_loaded_shp/scag_network_Full_loaded.shp
+  network_dictionary: data/input/network/Data_Dictionary_loaded_network.xlsx
+  # AB/BA_HRCAPAC is not in the loaded shapefile; this file carries it per link ID.
+  # Where it came from: data/input/network/PUT_SHAPEFILE_HERE.txt
+  link_capacity_csv: data/input/network/scag_link_hrcapac.csv
+  demand_folder: data/input/demand/OD_veh_trip_csv
+  demand_file: "{P}_OD.mtx.csv"            # [DD] "[time period]_OD.mtx"; header in the .DCC
+  demand_dictionary: data/input/demand/Data_Dictionary_OD_Vehicle_trip_matrix.xlsx
+  taz_correspondence: data/input/taz/TAZ_correspondence(in).csv
+  tier1_taz_shapefile: data/input/taz/T1TAZ_24RTP.shp
+  external_zones: data/input/taz/External Zone IDs.xlsx
+
+output:
+  root: data/output
+  # false: links whose allowed_use is "closed" (the Tier-2 connectors) are left out of
+  #        link.csv, and the nodes only they touch are left out of node.csv.
+  keep_closed_links: false
+  # true:  a period's link.csv keeps only the SCAG fields belonging to that period
+  #        (AB_FLOW_DA ... for AM), plus the fields that carry no period.
+  period_fields_only: true
+  include_daily_fields: true   # keep the seven <measure>_Day totals in every period
+  include_geometry: true       # write the WKT geometry at all
+  # true:  geometry goes to network/link_geometry.csv (link_id, org_link_id, dir_side, crs,
+  #        geometry), written once for all periods. 110 links have a WKT longer than Excel's
+  #        32,767-character cell limit, so keeping it out leaves link.csv readable in Excel
+  #        and in any CSV reader. TAPlite reads the link.csv column as optional.
+  # false: geometry is a column in link.csv.
+  geometry_separate_file: true
+  csv_bom: true                # UTF-8 with BOM, so Excel reads accented names correctly
+
+# ---- demand ------------------------------------------------------------------
+demand:
+  # Cells at or below this many vehicle trips are left out of <mode_type>_<P>.csv.
+  # 0 writes every positive cell. The trips left out are counted per mode and period in
+  # CONVERT_MANIFEST.json and CONVERSION_REPORT.md, so the retained share is on the record.
+  # Zone centroids are still resolved from the *unfiltered* trip ends: the threshold is an
+  # output filter, not a change to how zones are located.
+  min_volume: 0.01
+
+# link_type = area_type_multiplier x area type + facility type. 1000 for SCAG, whose
+# facility codes reach 200; NVTA's Cube converter uses 100 for facility types 0-6.
+# Decode with divmod(link_type, 1000): 4010 = area type 4, facility 10.
+link_type:
+  area_type_multiplier: 1000
+
+# ---- time periods, with SCAG's codes as used in the file names ----------------
+# [VR p.36, p.154] [SA capacity_time_period.png]
+periods:
+  AM:  {start_hour: 6,  end_hour: 9}
+  MD:  {start_hour: 9,  end_hour: 15}
+  PM:  {start_hour: 15, end_hour: 19}
+  EVE: {start_hour: 19, end_hour: 21}
+  NT:  {start_hour: 21, end_hour: 6}      # 9 hours; settings.csv writes 21 -> 30, see vdf_plf
+
+topology:
+  coordinate_decimals: 3                  # line end points matched to the millimetre
+  first_road_node_id: 100001              # centroids use zone_id 1..4192; road nodes start here
+
+# ---- shapefile fields, by their full DBD name [ND] -----------------------------
+# The converter finds the truncated shapefile name in the dictionary.
+# {D} = AB or BA, {P} = period code, {C} = flow class of a mode (modes > flow_class)
+link_fields:
+  id: ID                                  # link ID
+  dir: Dir                                # 0 two way, 1 or -1 one way
+  length_mi: Length                       # miles
+  road_name: Road Name
+  mode: MODE                              # 2 = highway
+  county: County
+  facility_type: "{D}_Facility_Type"
+  posted_speed: "{D}_PostedSpeed"
+  area_type: "{D}_AreaType"
+  free_time_min: "{D}_FreeTime"           # calculated free-flow travel time, minutes
+  lanes: "{D}_{P}LANES"
+  time_min: "{D}_Time_{P}"                # congested travel time, passenger car, minutes
+  flow: "{D}_Flow_{C}_{P}"
+  toll_flag: Toll_flag
+  truck_prohibit: TRUCK_Prohibit_Flag
+  hov_flag: HOV_FLAG
+
+capacity:
+  id_field: ID
+  hourly_capacity_field: "{D}_HRCAPAC"    # hourly, all lanes of the direction [SA VDF_intro.png]
+  lanes_basis_period: AM                  # capacity per lane = HRCAPAC / AM lanes
+
+# ---- modes: the matrix cores [DD] ----------------------------------------------
+#  mode_type    core name, "_" for spaces (allowed_use is ";"-separated; names files)
+#  flow_class   the class name inside {D}_Flow_{C}_{P} [ND]
+#  group        cost multiplier group
+#  pce          [UG 06_ModelParameters > Assignment]: light 1.2, medium 1.5, heavy 2.0
+#  occ          DA 1, SR2 2 by definition [DD]; SR3 is "3+", no average found: 3;
+#               trucks: not documented, 1
+#  cost_factor  distance cost conversion factor, $/h [VR Table 16-1 p.159] [UG Assignment]
+modes:
+  - {mode_type: DA,         core: DA,         flow_class: DA,            group: auto,  pce: 1.0, occ: 1, cost_factor: 33.9}
+  - {mode_type: SR2_HOV,    core: SR2 HOV,    flow_class: SR2 HOV,       group: auto,  pce: 1.0, occ: 2, cost_factor: 40.5}
+  - {mode_type: SR3_HOV,    core: SR3 HOV,    flow_class: SR3 HOV,       group: auto,  pce: 1.0, occ: 3, cost_factor: 40.5}
+  - {mode_type: LHDT,       core: LHDT,       flow_class: LIGHT TRUCKS,  group: truck, pce: 1.2, occ: 1, cost_factor: 52.4}
+  - {mode_type: MHDT,       core: MHDT,       flow_class: MEDIUM TRUCKS, group: truck, pce: 1.5, occ: 1, cost_factor: 65.8}
+  - {mode_type: HHDT,       core: HHDT,       flow_class: HEAVY TRUCKS,  group: truck, pce: 2.0, occ: 1, cost_factor: 70.7}
+  - {mode_type: SR2_NONHOV, core: SR2 NONHOV, flow_class: SR2 NONHOV,    group: auto,  pce: 1.0, occ: 2, cost_factor: 40.5}
+  - {mode_type: SR3_NONHOV, core: SR3 NONHOV, flow_class: SR3 NONHOV,    group: auto,  pce: 1.0, occ: 3, cost_factor: 40.5}
+
+# vot in mode_type.csv = cost_factor x this [VR Table 16-1] [UG Assignment]
+cost_multiplier:
+  auto:  {AM: 0.9, MD: 0.55, PM: 0.75, EVE: 0.55, NT: 0.55}
+  truck: {AM: 1.0, MD: 1.0,  PM: 1.0,  EVE: 1.0,  NT: 1.0}
+
+# ---- volume-delay functions [VR p.159-160] [TC] ----------------------------------
+vdf:
+  source: "[VR] Table 16-2 p.160; [UG 06_ModelParameters] BPR Beta Low = 4"
+  road_vdf_type: 7                        # SCAG piecewise BPR in TAPLite.cpp
+  uncongested_beta: 4.0                   # beta at x <= 1; the kernel's SCAG_UNCONGESTED_BETA
+  # First matching row wins. A row without facility_types is "All Others".
+  table_16_2:
+    - {group: Freeways and HOV, facility_types: [10, 20, 21, 22, 25], alpha: 1.00, beta: 8.0}
+    - {group: Expressways, facility_types: [30, 31, 32], posted_speed_max: 45, area_types: [1, 2, 3, 4, 5], alpha: 0.80, beta: 5.0}
+    - {group: Expressways, facility_types: [30, 31, 32], posted_speed_max: 45, area_types: [6, 7], alpha: 0.80, beta: 6.0}
+    - {group: Expressways, facility_types: [30, 31, 32], posted_speed_min: 46, alpha: 0.80, beta: 8.0}
+    - {group: All Others, area_types: [1, 2, 3, 4, 5], alpha: 0.80, beta: 5.0}
+    - {group: All Others, area_types: [6, 7], alpha: 0.80, beta: 6.0}
+  on_ramp:
+    facility_types: [82, 84]              # arterial to freeway, arterial to HOV [UG]
+    # 8 = the report's on-ramp function as coded in TAPLite.cpp.
+    # 7 = Table 16-2 "All Others". See "On-ramp function" in CONVERSION_REPORT.md first.
+    vdf_type: 8
+    source: "[VR] p.160 freeway on-ramp function; [SA on_ramp_parameters.png]; [TC] vdf_type 8"
+  connectors:
+    facility_types: [100, 200]
+    # alpha 0 makes any vdf_type give t = t0 at every volume, which is what SCAG's loaded
+    # times show on connectors. 7 keeps every link on SCAG's own function; 0 is the plain
+    # BPR and is what the kernel's QVDF reference model reads without substitution.
+    vdf_type: 7
+    alpha: 0.0
+    beta: 1.0
+    source: "[M] SCAG loaded time equals free-flow time on every connector; NVTA connector rule"
+  # E, the period capacity factor: vdf_plf = E / the period's own hours.
+  # SCAG's own number, read from their 50PL working network:
+  #   E = "<D> CAPA <P>" / <D>_HRCAPACITY<P>
+  # which is one exact integer per period on all 123,045 links that carry capacity [M].
+  # That folder was removed from the kit once these five numbers were taken from it; the
+  # field names it documented survive in data/input/network/scag_50pl_field_map.csv.
+  #   {AM: 3, ...}  pinned, as below
+  #   clock_hours   assume period capacity = hourly capacity x period length
+  period_capacity_factor: {AM: 3, MD: 6, PM: 4, EVE: 2, NT: 8}
+  # vdf_plf = E / period hours: 1.0 for AM, MD, PM, EVE and 8/9 = 0.889 for NT. The night
+  # period is nine hours, so settings.csv writes it as 21 -> 30 (6 AM next day) and the
+  # kernel's H = 9. H x vdf_plf = E reproduces SCAG's own period capacity in every period.
+  # SCAG's factors sum to 23, not 24: they give the 9-hour night only 8 hours of capacity.
+
+# ---- allowed_use ---------------------------------------------------------------
+access:
+  highway_mode: 2                         # [ND] MODE 2 = highway; other MODE values are left out
+  closed_facility_types: [200]
+  closed_reason: "Tier-2 centroid connector: the trip tables are Tier 1; SCAG loaded flow is 0"
+  rules:                                  # first matching rule wins; no match = all modes
+    - name: HOV 3+ lane
+      facility_types: [21]
+      allowed: [SR3_HOV]
+      source: "[UG] facility 21 HOV 3+"
+    - name: HOV lane, HOV connector or HOV ramp
+      facility_types: [20, 22, 25, 84, 85]
+      allowed: [SR2_HOV, SR3_HOV]
+      source: "[UG] facility 20, 22, 25, 84, 85; [DD] HOV classes use the HOV facility option"
+    - name: Express/HOT lane
+      toll_flags: [21, 22]
+      allowed: [DA, SR2_HOV, SR3_HOV]
+      source: "[VR p.181] toll flag 21/22; DA allowed and trucks/NONHOV barred as in the loaded flows [M]"
+    - name: Truck-only facility
+      facility_types: [89, 90]
+      allowed: [LHDT, MHDT, HHDT]
+      source: "[UG] facility 89 truck-only ramp, 90 truck lanes"
+    - name: Trucks prohibited
+      truck_prohibit: [1]
+      allowed: [DA, SR2_HOV, SR3_HOV, SR2_NONHOV, SR3_NONHOV]
+      source: "[UG] link flags, [VR p.181]: 1 = trucks prohibited"
+
+# ---- zones -----------------------------------------------------------------------
+zones:
+  crosswalk_taz_id_field: TAZ_ID_t1       # the ids in the trip tables
+  crosswalk_zone_field: TAZ_seq_t1        # 1..4192, written as zone_id
+  zone_types:                             # [VR Table 15-8 p.150] [UG Initialization: 4192 zones]
+    internal: [1, 4109]
+    external: [4110, 4149]
+    airport:  [4150, 4161]
+    seaport:  [4162, 4192]
+  tier1_zone_field: SEQ
+  tier1_connector_facility_type: 100
+  external_zones_sheet: external zone Ids
+  resolve:                                # how centroids are located: code/src/scag_transcad/zones.py
+    period: AM
+    min_trip_ends: 1.0                    # zones with fewer trip ends are not located
+    external_boundary_distance_m: 3000
+    high_score: 0.15                      # confidence: high <= 0.15 and runner-up >= 1.25 x
+    high_ratio: 1.25
+    medium_score: 0.40
+    # Zones with too little demand to locate by flow (the near-empty port and airport
+    # zones) take an unused connector node in their own county, within assumed_max_km of
+    # the zones of their own type. SCAG's ccportzone field would say which node is which
+    # terminal, but it sits past the shapefile's 255-field limit, so the pairing is an
+    # assumption and is written as confidence = assumed.
+    place_unmatched_specials: true
+    assumed_max_km: 15
+
+# Codes the SCAG documentation lists; the report names any other code found.
+documented_codes:
+  facility_type: [10, 20, 21, 22, 25, 30, 31, 32, 40, 41, 42, 50, 51, 52, 60, 61, 62, 70, 71, 72, 73, 74,
+                  80, 81, 82, 83, 84, 85, 86, 87, 89, 90, 100, 200, 300]   # [UG] + [SA VDF_intro.png] 73, 74
+  toll_flag: [11, 12, 21, 22]             # [VR p.181]
+  truck_prohibit: [0, 1]                  # [UG] [VR p.181]
+  hov_flag: [0, 1, 2, 3]                  # [UG] HOV operation
+  mode: [1, 2, 4, 24, 25, 26]             # [ND]
+
+# ---- assignment ------------------------------------------------------------------
+assignment:
+  config_name: SCAG_VDF_REPLAY            # runs/<config_name>/<period>/
+  iterations: [1, 20]                     # one run folder per value in main_replay.py
+  processors: 10

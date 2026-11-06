@@ -1,0 +1,443 @@
+{
+  "region": {
+    "name": "CMAP",
+    "model": "emme_cmap",
+    "description": "CMAP trip-based model (ON TO 2050 update), c25q4 scenario 100 (2019), Emme highway network",
+    "conformity_cycle": "c25q4",
+    "scenario": 100,
+    "base_year": 2019
+  },
+  "references": {
+    "G": {
+      "title": "CMAP Travel Demand Model Data User Guide (c25q4)",
+      "file": "data/input/cmap/docs/data_user_guide.html",
+      "url": "https://datahub.cmap.illinois.gov/documents/a14d641dbe184704ab597479b103986c/explore"
+    },
+    "A": {
+      "title": "ON TO 2050 plan update: Travel demand model appendix",
+      "file": "data/input/cmap/docs/ON-TO-2050-Update-Travel-Demand-Model-Documentation-Appendix.pdf",
+      "url": "https://cmap.illinois.gov/wp-content/uploads/ON-TO-2050-Update-Travel-Demand-Model-Documentation-Appendix.pdf"
+    },
+    "C": {
+      "title": "CMAP trip-based model code (Ftime_capacity.py, TOD_network_prep.py, vdf_tod.in)",
+      "file": "data/input/cmap/docs/cmap_code/",
+      "url": "https://github.com/CMAP-REPOS/cmap_trip-based_model/tree/e52b3185920b139fb77983a74458b05fa4923890/Database"
+    }
+  },
+  "input": {
+    "links_shapefile": {
+      "PM": "data/input/cmap/network/highwayshp_pmpk/emme_links.shp"
+    },
+    "nodes_shapefile": {
+      "PM": "data/input/cmap/network/highwayshp_pmpk/emme_nodes.shp"
+    },
+    "turns_dbf": {
+      "PM": "data/input/cmap/network/highwayshp_pmpk/emme_turns.dbf"
+    },
+    "extra_attributes": {
+      "PM": "data/input/cmap/network/emmenet_highway/attribs_p7.txt"
+    },
+    "emme_network": {
+      "PM": "data/input/cmap/network/emmenet_highway/network_p7.txt"
+    }
+  },
+  "output": {
+    "root": "data/output/cmap",
+    "geometry_separate_file": true,
+    "csv_bom": true
+  },
+  "periods": {
+    "PM": {
+      "emme_period": 7,
+      "start_hour": 16,
+      "end_hour": 18,
+      "hours": 2
+    }
+  },
+  "crs": {
+    "source": "EPSG:26771",
+    "target": "EPSG:4326"
+  },
+  "zones": {
+    "first_zone_id": 1,
+    "last_zone_id": 3649,
+    "zone_flag_field": "ISZONE"
+  },
+  "link_fields": {
+    "id": "ID",
+    "inode": "INODE",
+    "jnode": "JNODE",
+    "length_mi": "LENGTH",
+    "modes": "MODES",
+    "lanes": "LANES",
+    "vdf": "VDF",
+    "volume": "DATA1",
+    "time": "TIMAU"
+  },
+  "node_fields": {
+    "id": "ID",
+    "x": "X",
+    "y": "Y",
+    "zone_flag": "ISZONE",
+    "label": "LABEL"
+  },
+  "extra_attribute_fields": {
+    "inode": "i_node",
+    "jnode": "j_node",
+    "speed_mph": "@speed",
+    "free_time_min": "@ftime",
+    "lane_capacity": "@emcap",
+    "toll": "@toll",
+    "tip_id": "@tipid",
+    "lane_width_ft": "@width",
+    "avg_lane_width_ft": "@avelw",
+    "parking_lanes": "@parkl",
+    "signal_interconnect": "@sigic",
+    "volume": "@vadt",
+    "time": "timau"
+  },
+  "vdf": {
+    "functions": {
+      "1": {
+        "name": "arterial street",
+        "alpha": 0.15,
+        "exponent": 4,
+        "capacity_factor": 0.75,
+        "capacity_add": 0,
+        "min_term": false,
+        "ftime_divisor": 1.0,
+        "intersection_delay": true,
+        "page": "C vdf_tod.in fd1; A pp.123-124",
+        "form": "ul1 [1 + 0.15 (v/ul2)^4] + signal delay from ul3 (@cycle, @gc), capped at one cycle"
+      },
+      "2": {
+        "name": "freeway",
+        "alpha": 0.15,
+        "exponent": 8,
+        "capacity_factor": 0.75,
+        "capacity_add": 300,
+        "min_term": true,
+        "ftime_divisor": 1.15,
+        "intersection_delay": false,
+        "page": "C vdf_tod.in fd2; A p.124",
+        "form": "[1 + 0.15 min(v/ul2, 1)] (ul1 / 1.15) [1 + 0.15 (v / (ul2 + 300))^8]"
+      },
+      "3": {
+        "name": "freeway-arterial ramp",
+        "alpha": 0.15,
+        "exponent": 4,
+        "capacity_factor": 0.75,
+        "capacity_add": 0,
+        "min_term": false,
+        "ftime_divisor": 1.0,
+        "intersection_delay": true,
+        "page": "C vdf_tod.in fd3; A pp.123-124",
+        "form": "same as fd1"
+      },
+      "4": {
+        "name": "expressway",
+        "alpha": 0.15,
+        "exponent": 8,
+        "capacity_factor": 0.75,
+        "capacity_add": 0,
+        "min_term": true,
+        "ftime_divisor": 1.0,
+        "intersection_delay": false,
+        "page": "C vdf_tod.in fd4; A p.125",
+        "form": "[1 + 0.15 min(v/ul2, 1)] ul1 [1 + 0.15 (v/ul2)^8]"
+      },
+      "5": {
+        "name": "freeway-freeway ramp",
+        "alpha": 0.15,
+        "exponent": 8,
+        "capacity_factor": 0.75,
+        "capacity_add": 0,
+        "min_term": false,
+        "ftime_divisor": 1.0,
+        "intersection_delay": false,
+        "page": "C vdf_tod.in fd5; A p.125",
+        "form": "ul1 [1 + 0.15 (v/ul2)^8]"
+      },
+      "6": {
+        "name": "zone centroid connector",
+        "alpha": 0.0,
+        "exponent": 1,
+        "capacity_factor": 1.0,
+        "capacity_add": 0,
+        "min_term": false,
+        "ftime_divisor": 1.0,
+        "intersection_delay": false,
+        "page": "C vdf_tod.in fd6 = length x 3 (20 mph)",
+        "form": "fixed: t = length x 3 min"
+      },
+      "7": {
+        "name": "toll collection link",
+        "alpha": 0.0,
+        "exponent": 1,
+        "capacity_factor": 1.0,
+        "capacity_add": 0,
+        "min_term": false,
+        "ftime_divisor": 1.0,
+        "intersection_delay": false,
+        "page": "C vdf_tod.in fd7 = ul1; A p.126",
+        "form": "fixed: t = @ftime (speed of incoming link); no capacity constraint"
+      },
+      "8": {
+        "name": "metered entrance ramp",
+        "alpha": 0.15,
+        "exponent": 10,
+        "capacity_factor": 1.0,
+        "capacity_add": 0,
+        "min_term": false,
+        "ftime_divisor": 1.0,
+        "intersection_delay": false,
+        "page": "C vdf_tod.in fd8; A pp.125-126",
+        "form": "ul1 [1 + 0.15 (v/ul2)^10], ul2 = 720 x lanes x hours"
+      }
+    },
+    "free_speed_rules_source": "C Database/macros/Ftime_capacity.py",
+    "no_capacity_links": {
+      "vdf_codes": [
+        6,
+        7
+      ],
+      "capacity_placeholder": 99999,
+      "vdf_type": 0,
+      "alpha": 0.0,
+      "beta": 1.0,
+      "capacity_source_label": "placeholder_no_constraint"
+    }
+  },
+  "toll": {
+    "fixed_vdf_codes": [
+      7
+    ]
+  },
+  "access": {
+    "mode_order": [
+      "sov",
+      "hov2",
+      "hov3",
+      "apv",
+      "btrk",
+      "ltrk",
+      "mtrk",
+      "htrk"
+    ],
+    "letters": {
+      "A": [
+        "sov",
+        "apv"
+      ],
+      "S": [
+        "sov"
+      ],
+      "H": [
+        "hov2",
+        "hov3"
+      ],
+      "b": [
+        "btrk"
+      ],
+      "l": [
+        "ltrk"
+      ],
+      "m": [
+        "mtrk"
+      ],
+      "h": [
+        "htrk"
+      ]
+    }
+  },
+  "demand": {
+    "emmemat_zip": "../c25q4_100/emmemat_c25q4_100.zip",
+    "zones": 3649,
+    "min_volume": 0.01,
+    "periods": {
+      "PM": {
+        "tables": {
+          "sov": [
+            [
+              "mf417",
+              1.0
+            ],
+            [
+              "mf427",
+              1.0
+            ],
+            [
+              "mf437",
+              1.0
+            ],
+            [
+              "mf8",
+              0.155
+            ]
+          ],
+          "hov2": [
+            [
+              "mf447",
+              1.0
+            ]
+          ],
+          "hov3": [
+            [
+              "mf457",
+              1.0
+            ]
+          ],
+          "apv": "airport",
+          "btrk": [
+            [
+              "mf4",
+              0.176
+            ]
+          ],
+          "ltrk": [
+            [
+              "mf5",
+              0.176
+            ]
+          ],
+          "mtrk": [
+            [
+              "mf6",
+              0.176
+            ]
+          ],
+          "htrk": [
+            [
+              "mf7",
+              0.103
+            ],
+            [
+              "mf9",
+              0.103
+            ]
+          ]
+        },
+        "airport": {
+          "matrix": "mf10",
+          "to_airport_factor": 0.155,
+          "from_airport_factor": 0.155
+        },
+        "expected_sov_demand_model_total": 2351437
+      }
+    },
+    "zone_flags": {
+      "cbd": [
+        1,
+        47
+      ],
+      "airport": {
+        "123": 3,
+        "124": 3,
+        "125": 3,
+        "126": 3,
+        "127": 3,
+        "129": 3,
+        "130": 3,
+        "494": 2,
+        "1733": 3,
+        "1734": 3,
+        "1969": 3,
+        "2907": 4
+      }
+    },
+    "mode_types": [
+      {
+        "mode_type": "sov",
+        "name": "SOV + external auto",
+        "vot": "weighted",
+        "pce": 1,
+        "occ": 1
+      },
+      {
+        "mode_type": "hov2",
+        "name": "HOV2",
+        "vot": 20.25,
+        "pce": 1,
+        "occ": 2
+      },
+      {
+        "mode_type": "hov3",
+        "name": "HOV3+",
+        "vot": 31.5,
+        "pce": 1,
+        "occ": 3.36
+      },
+      {
+        "mode_type": "apv",
+        "name": "air passenger",
+        "vot": 30,
+        "pce": 1,
+        "occ": 1
+      },
+      {
+        "mode_type": "btrk",
+        "name": "B-plate truck",
+        "vot": 24,
+        "pce": 1,
+        "occ": 1
+      },
+      {
+        "mode_type": "ltrk",
+        "name": "light truck",
+        "vot": 32,
+        "pce": 1,
+        "occ": 1
+      },
+      {
+        "mode_type": "mtrk",
+        "name": "medium truck",
+        "vot": 47,
+        "pce": 2,
+        "occ": 1
+      },
+      {
+        "mode_type": "htrk",
+        "name": "heavy truck",
+        "vot": 52,
+        "pce": 3,
+        "occ": 1
+      }
+    ],
+    "sov_vot_classes": {
+      "mf417": 5.175,
+      "mf427": 16.2,
+      "mf437": 48.0
+    },
+    "external_vot_split": [
+      0.1,
+      0.45,
+      0.45
+    ]
+  },
+  "checks": {
+    "expected_nodes": 20190,
+    "expected_links": 55005,
+    "expected_zones": 3649,
+    "bbox_lat": [
+      40.5,
+      43.5
+    ],
+    "bbox_lon": [
+      -90.0,
+      -86.0
+    ],
+    "free_speed_mph": [
+      5,
+      85
+    ],
+    "ftime_tolerance": 0.01,
+    "length_tolerance": 0.05,
+    "vdf_reproduced_codes": [
+      5,
+      6,
+      7,
+      8
+    ],
+    "vdf_reproduced_median_error": 0.01
+  }
+}

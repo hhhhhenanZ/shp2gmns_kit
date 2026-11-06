@@ -1,0 +1,9 @@
+﻿mode_type_id,mode_type,name,vot,pce,occ,demand_file
+1,sov,SOV + external auto,20.49,1,1.0,sov_PM.csv
+2,hov2,HOV2,20.25,1,2.0,hov2_PM.csv
+3,hov3,HOV3+,31.5,1,3.36,hov3_PM.csv
+4,apv,air passenger,30.0,1,1.0,apv_PM.csv
+5,btrk,B-plate truck,24.0,1,1.0,btrk_PM.csv
+6,ltrk,light truck,32.0,1,1.0,ltrk_PM.csv
+7,mtrk,medium truck,47.0,2,1.0,mtrk_PM.csv
+8,htrk,heavy truck,52.0,3,1.0,htrk_PM.csv

@@ -1,0 +1,262 @@
+# =============================================================================
+#  region.cmap.yaml  —  CMAP (Emme) highway network, PM peak
+# =============================================================================
+#  CMAP trip-based model, ON TO 2050 update, conformity cycle c25q4, scenario 100
+#  (2019 base year). "model: emme_cmap" selects code/src/cmap_emme.
+#
+#  Run:
+#    python code\check_inputs.py --region region.cmap.yaml
+#    python code\main_convert.py --region region.cmap.yaml --periods PM
+#
+#  Every number below is CMAP's own or a rule written here with its source.
+#  Paths are relative to this file. References:
+#    [G]  CMAP Travel Demand Model Data User Guide (c25q4), data/input/cmap/docs/data_user_guide.html
+#         shipped in the c25q4 data package, CMAP Data Hub:
+#         https://datahub.cmap.illinois.gov/documents/a14d641dbe184704ab597479b103986c/explore
+#    [A]  ON TO 2050 plan update: Travel demand model appendix,
+#         data/input/cmap/docs/ON-TO-2050-Update-Travel-Demand-Model-Documentation-Appendix.pdf
+#         https://cmap.illinois.gov/wp-content/uploads/ON-TO-2050-Update-Travel-Demand-Model-Documentation-Appendix.pdf
+#         (printed page numbers)
+#    [C]  CMAP trip-based model code, https://github.com/CMAP-REPOS/cmap_trip-based_model (commit e52b318, 2026-04-30),
+#         copies in data/input/cmap/docs/cmap_code/:
+#         Database/macros/Ftime_capacity.py  (@ftime, @emcap: free-speed rounding, meter delay)
+#         Database/macros/TOD_network_prep.py (VDF capacity ul2 = 0.75 x @emcap x lanes x hours, VDF 1-5)
+#         Database/data/vdf_tod.in           (Emme functions fd1-fd8 as run)
+#    [M]  measured on the c25q4 PM files: data/output/cmap/CONVERSION_REPORT.md
+#  Work plan: ../CMAP_network_workplan.md
+# =============================================================================
+
+region:
+  name: CMAP
+  model: emme_cmap
+  description: CMAP trip-based model (ON TO 2050 update), c25q4 scenario 100 (2019), Emme highway network
+  conformity_cycle: c25q4
+  scenario: 100
+  base_year: 2019
+
+references:
+  G:
+    title: CMAP Travel Demand Model Data User Guide (c25q4)
+    file: data/input/cmap/docs/data_user_guide.html
+    url: https://datahub.cmap.illinois.gov/documents/a14d641dbe184704ab597479b103986c/explore
+  A:
+    title: "ON TO 2050 plan update: Travel demand model appendix"
+    file: data/input/cmap/docs/ON-TO-2050-Update-Travel-Demand-Model-Documentation-Appendix.pdf
+    url: https://cmap.illinois.gov/wp-content/uploads/ON-TO-2050-Update-Travel-Demand-Model-Documentation-Appendix.pdf
+  C:
+    title: CMAP trip-based model code (Ftime_capacity.py, TOD_network_prep.py, vdf_tod.in)
+    file: data/input/cmap/docs/cmap_code/
+    url: https://github.com/CMAP-REPOS/cmap_trip-based_model/tree/e52b3185920b139fb77983a74458b05fa4923890/Database
+
+# ---- where the files are ----------------------------------------------------
+input:
+  # Period shapefiles exported from Emme [G "PM Peak Highway Network Shapefiles"]
+  links_shapefile: {PM: data/input/cmap/network/highwayshp_pmpk/emme_links.shp}
+  nodes_shapefile: {PM: data/input/cmap/network/highwayshp_pmpk/emme_nodes.shp}
+  turns_dbf:       {PM: data/input/cmap/network/highwayshp_pmpk/emme_turns.dbf}   # listed, not converted
+  # Extra attribute file of the same period: capacity, speed, free-flow time are only here
+  # [G "Emme Highway Networks (emmenet_highway)"]
+  extra_attributes: {PM: data/input/cmap/network/emmenet_highway/attribs_p7.txt}
+  # Emme transaction file of the same period: used only for the cross-check (gate G12)
+  emme_network:     {PM: data/input/cmap/network/emmenet_highway/network_p7.txt}
+
+output:
+  root: data/output/cmap
+  geometry_separate_file: true   # WKT in network/link_geometry.csv, as in the SCAG output
+  csv_bom: true                  # UTF-8 with BOM so Excel reads the files
+
+# ---- time periods [G "Emme Highway Networks": period table] --------------------
+periods:
+  PM: {emme_period: 7, start_hour: 16, end_hour: 18, hours: 2}
+
+# ---- coordinates [A Table 19 p.48] [emme_links.prj] ----------------------------
+crs:
+  source: "EPSG:26771"   # NAD27 / Illinois East, US survey feet
+  target: "EPSG:4326"
+
+# ---- zones [M] ---------------------------------------------------------------
+zones:
+  first_zone_id: 1
+  last_zone_id: 3649          # ISZONE = 1 on exactly these nodes; node_id < 5000 = centroid [G]
+  zone_flag_field: ISZONE
+
+# ---- shapefile fields ---------------------------------------------------------
+link_fields:
+  id: ID              # "i-j"
+  inode: INODE
+  jnode: JNODE
+  length_mi: LENGTH   # miles [G link field 4] [A Table 18 p.47]
+  modes: MODES        # mode letters [A Table 18 p.47]
+  lanes: LANES        # driving lanes [A Table 18 p.47]
+  vdf: VDF            # volume-delay function code [A Table 18 p.47]
+  # DATA1 -> ref_volume; TIMAU -> ref_time and timau. CMAP static assignment, PM 4-6 pm:
+  # one equilibrium volume per link for the whole 2 h, and the VDF time at that volume.
+  # One value per link for the period, a model output, not observed. Details:
+  # code/src/cmap_emme/network.py docstring, "Reference fields".
+  volume: DATA1       # vehicles per 2-h period (not per hour) [G "PM Peak Highway Network Shapefiles"]
+  time: TIMAU         # minutes, VDF time at the final volume [G "Emme Highway Networks"; C vdf_tod.in]
+  # VOLAU in the shapefile is not a volume (median 3,648) and is not used [M]
+node_fields:
+  id: ID
+  x: X                # US survey feet [A Table 19 p.48]
+  y: Y
+  zone_flag: ISZONE
+  label: LABEL
+
+# ---- extra attribute file fields [G "Network and extra attribute file layout"] ----
+extra_attribute_fields:
+  inode: i_node
+  jnode: j_node
+  speed_mph: "@speed"         # posted speed or CMAP free speed, mph [G] [A Table 1 p.14]
+  free_time_min: "@ftime"     # uncongested time, minutes, no intersection delay [A Table 18 p.47, p.49]
+  lane_capacity: "@emcap"     # LOS E capacity, vehicles per hour PER LANE [G] [A pp.48-49]
+  toll: "@toll"               # US dollars [G] [A Table 1 p.14]
+  tip_id: "@tipid"
+  lane_width_ft: "@width"     # feet [G]
+  avg_lane_width_ft: "@avelw"
+  parking_lanes: "@parkl"
+  signal_interconnect: "@sigic"
+  volume: "@vadt"             # vehicles per period [G]
+  time: timau                 # minutes [G]
+
+# ---- volume-delay functions [A pp.122-126] ---------------------------------------
+#  As run by CMAP [C vdf_tod.in, TOD_network_prep.py]:
+#    ul1 = @ftime;  ul2 = 0.75 x @emcap x lanes x hours on VDF 1-5, @emcap x lanes x hours on VDF 8
+#    (PM: hours = 2);  v = volau + el2 (vehicle equivalents incl. bus veq).
+#  The appendix [A p.123] mentions the 0.75 (LOS C) only for arterials; the code applies it to
+#  VDF 1-5. The code is followed. capacity_factor below = that 0.75.
+#  min_term: [1 + 0.15 min(v/ul2, 1)] on VDF 2 and 4. capacity_add: + 300 on ul2 for VDF 2.
+#  These rows go to parameters/vdf_parameters.csv. The TAPLite form for VDF 1-5 and 8 is
+#  chosen in the replay step, not here.
+#  VDF 2: the /1.15 is applied in fd2 and is not in @ftime [C].
+vdf:
+  functions:
+    1: {name: arterial street,          alpha: 0.15, exponent: 4,  capacity_factor: 0.75, capacity_add: 0,   min_term: false, ftime_divisor: 1.0,  intersection_delay: true,  page: "C vdf_tod.in fd1; A pp.123-124", form: "ul1 [1 + 0.15 (v/ul2)^4] + signal delay from ul3 (@cycle, @gc), capped at one cycle"}
+    2: {name: freeway,                  alpha: 0.15, exponent: 8,  capacity_factor: 0.75, capacity_add: 300, min_term: true,  ftime_divisor: 1.15, intersection_delay: false, page: "C vdf_tod.in fd2; A p.124", form: "[1 + 0.15 min(v/ul2, 1)] (ul1 / 1.15) [1 + 0.15 (v / (ul2 + 300))^8]"}
+    3: {name: freeway-arterial ramp,    alpha: 0.15, exponent: 4,  capacity_factor: 0.75, capacity_add: 0,   min_term: false, ftime_divisor: 1.0,  intersection_delay: true,  page: "C vdf_tod.in fd3; A pp.123-124", form: "same as fd1"}
+    4: {name: expressway,               alpha: 0.15, exponent: 8,  capacity_factor: 0.75, capacity_add: 0,   min_term: true,  ftime_divisor: 1.0,  intersection_delay: false, page: "C vdf_tod.in fd4; A p.125", form: "[1 + 0.15 min(v/ul2, 1)] ul1 [1 + 0.15 (v/ul2)^8]"}
+    5: {name: freeway-freeway ramp,     alpha: 0.15, exponent: 8,  capacity_factor: 0.75, capacity_add: 0,   min_term: false, ftime_divisor: 1.0,  intersection_delay: false, page: "C vdf_tod.in fd5; A p.125", form: "ul1 [1 + 0.15 (v/ul2)^8]"}
+    6: {name: zone centroid connector,  alpha: 0.0,  exponent: 1,  capacity_factor: 1.0,  capacity_add: 0,   min_term: false, ftime_divisor: 1.0,  intersection_delay: false, page: "C vdf_tod.in fd6 = length x 3 (20 mph)", form: "fixed: t = length x 3 min"}
+    7: {name: toll collection link,     alpha: 0.0,  exponent: 1,  capacity_factor: 1.0,  capacity_add: 0,   min_term: false, ftime_divisor: 1.0,  intersection_delay: false, page: "C vdf_tod.in fd7 = ul1; A p.126", form: "fixed: t = @ftime (speed of incoming link); no capacity constraint"}
+    8: {name: metered entrance ramp,    alpha: 0.15, exponent: 10, capacity_factor: 1.0,  capacity_add: 0,   min_term: false, ftime_divisor: 1.0,  intersection_delay: false, page: "C vdf_tod.in fd8; A pp.125-126", form: "ul1 [1 + 0.15 (v/ul2)^10], ul2 = 720 x lanes x hours"}
+
+  # ---- @ftime as computed by CMAP [C Ftime_capacity.py] -- documentation only ------------
+  # @speed is rounded UP to a bin, then @ftime = length / binned speed x 60:
+  #   VDF 2, 4:    bins 40, 45, 50, 55, 60, 65   (<= 40 -> 40; > 60 -> 65)
+  #   VDF 1:       bins 15, 20, ..., 50, 55      (> 50 -> 55)
+  #   VDF 3, 5, 8: bins 15, 20, ..., 45, 50      (> 45 -> 50)
+  #   VDF 8:       + 0.083 min (5-second meter delay)
+  #   VDF 6:       length x 3 (20 mph);  VDF 7: posted speed of the incoming link
+  # The converter uses @ftime as given; checks/ftime_vs_posted_speed.csv lists where it differs
+  # from LENGTH / @speed.
+  free_speed_rules_source: "C Database/macros/Ftime_capacity.py"
+
+  # ---- links without a CMAP capacity: CMAP ONLY -----------------------------------
+  # @emcap = 0 on every VDF 6 (centroid connector) and VDF 7 (toll collection) link, and
+  # CMAP does not constrain their capacity [G; A p.126]. There is no reference value, so
+  # 99,999 is a PLACEHOLDER, not a capacity. It is needed only because capacity 0 would
+  # divide by zero in v/C. alpha = 0 keeps t = @ftime at every volume, so the value does
+  # not change the assignment, and v/C stays near 0 so these links never look like
+  # bottlenecks. NVTA (3,150) and SCAG (their own file) are not affected by this block.
+  # Connectors are identified by VDF code 6, not by touching a zone node: the 34 road
+  # links leaving zones 3633-3649 keep @emcap and their own VDF.
+  no_capacity_links:
+    vdf_codes: [6, 7]
+    capacity_placeholder: 99999
+    vdf_type: 0          # BPR form in TAPLite; with alpha 0 it returns t0 at every volume
+    alpha: 0.0
+    beta: 1.0
+    capacity_source_label: placeholder_no_constraint
+
+# ---- tolls ---------------------------------------------------------------------------
+# @toll is dollars per link in the Emme network: CMAP's assignment adds it unchanged as the
+# link cost [C Database/macros/SOLA_assignment.py]. The per-mile wording in [A Table 1 p.14]
+# describes the master-network field TOLLDOLLARS, which is converted before export.
+# toll = @toll as given (NVTA also writes toll in dollars).
+toll:
+  fixed_vdf_codes: [7]
+
+# ---- allowed_use from the MODES letters [A Table 18 p.47] [G Modes] ----------------
+# A primary auto, S SOV, H HOV, T general truck, b B-plate, l light, m medium, h heavy truck.
+# allowed_use lists mode codes, ';'-separated, as NVTA does (dtalite4cube/cube2gmns/netconfig.py).
+# The codes are the OD vehicle classes, so TAPLite matches demand to links:
+#   sov  = trip_roster SOV + mf8 (auto point-of-entry; SOV per [G])
+#   hov2, hov3 = trip_roster HOV2, HOV3+
+#   apv  = mf10 (airport); allowed wherever autos are
+#   btrk = mf4 (B-plate: vans, pickups, SUVs < 8,000 lb [A p.111])
+#   ltrk = mf5, mtrk = mf6, htrk = mf7 + mf9 (truck point-of-entry; same TOD factors as heavy [G])
+# T (general truck) adds nothing: the classes come from b, l, m, h.
+access:
+  mode_order: [sov, hov2, hov3, apv, btrk, ltrk, mtrk, htrk]
+  letters:
+    A: [sov, apv]
+    S: [sov]
+    H: [hov2, hov3]
+    b: [btrk]
+    l: [ltrk]
+    m: [mtrk]
+    h: [htrk]
+
+# ---- PM demand (OD) -------------------------------------------------------------------
+# Built as CMAP's ttables.mac builds the period-7 tables [C Database/macros/ttables.mac],
+# factors from [C Database/data/tod_factors.p7] = [G] "Daily truck and external trip
+# time-of-day conversion", TOD7 column. Work plan: ../CMAP_OD_workplan.md.
+# Matrices are Emme .emx files (float32, 3649 x 3649, no header) read from the zip in place.
+# Output: demand/<P>/<mode_type>_<P>.csv, o_zone_id,d_zone_id,volume = vehicles per 2-h period.
+demand:
+  emmemat_zip: ../c25q4_100/emmemat_c25q4_100.zip
+  zones: 3649
+  # Cells at or below this are not written (fast first version; no rescaling). Kept share per
+  # mode goes to parameters/demand_summary.csv and the report. Trucks lose up to ~29 %.
+  min_volume: 0.01
+  periods:
+    PM:
+      # mode_type: list of [matrix, factor]; volume = sum(factor x matrix)
+      tables:
+        sov:  [[mf417, 1.0], [mf427, 1.0], [mf437, 1.0], [mf8, 0.155]]   # ttables l.392-444 (r19)
+        hov2: [[mf447, 1.0]]
+        hov3: [[mf457, 1.0]]
+        apv:  airport                                                     # ttables l.464-465 (r20, r21)
+        btrk: [[mf4, 0.176]]                                              # l.601 (r22)
+        ltrk: [[mf5, 0.176]]                                              # l.626 (r23)
+        mtrk: [[mf6, 0.176]]                                              # l.658 (r24); x2 veq -> pce
+        htrk: [[mf7, 0.103], [mf9, 0.103]]                                # l.684-685 (r25, r26); x3 veq -> pce
+      airport: {matrix: mf10, to_airport_factor: 0.155, from_airport_factor: 0.155}
+      # check D4: mf417 + mf427 + mf437 = trip_roster PM2 mode 1 (measured 2026-10-27)
+      expected_sov_demand_model_total: 2351437
+  # tod_flags.in [C]: pflag (origin) = qflag (destination); >= 2 airport zones, 1 = CBD, 0 = other.
+  # Airport rule: to an airport (qflag >= 2) or from an airport (pflag >= 2) to an unflagged zone.
+  zone_flags:
+    cbd: [1, 47]          # zones 1-47 flag 1
+    airport: {123: 3, 124: 3, 125: 3, 126: 3, 127: 3, 129: 3, 130: 3, 494: 2, 1733: 3, 1734: 3, 1969: 3, 2907: 4}
+  # mode_type.csv values [C ttables.mac r100-r114 with perception factors; G occupancy; A p.122 veq]
+  # sov vot: PM-trip-weighted mean of VOT1-3 (externals split 0.10/0.45/0.45, r61-r63).
+  mode_types:
+    - {mode_type: sov,  name: SOV + external auto,  vot: weighted, pce: 1, occ: 1}
+    - {mode_type: hov2, name: HOV2,                 vot: 20.25,    pce: 1, occ: 2}
+    - {mode_type: hov3, name: HOV3+,                vot: 31.5,     pce: 1, occ: 3.36}
+    - {mode_type: apv,  name: air passenger,        vot: 30,       pce: 1, occ: 1}
+    - {mode_type: btrk, name: B-plate truck,        vot: 24,       pce: 1, occ: 1}
+    - {mode_type: ltrk, name: light truck,          vot: 32,       pce: 1, occ: 1}
+    - {mode_type: mtrk, name: medium truck,         vot: 47,       pce: 2, occ: 1}
+    - {mode_type: htrk, name: heavy truck,          vot: 52,       pce: 3, occ: 1}
+  sov_vot_classes: {mf417: 5.175, mf427: 16.2, mf437: 48.0}   # 2.3x2.25, 7.2x2.25, 24x2.00
+  external_vot_split: [0.10, 0.45, 0.45]
+
+# ---- gates ---------------------------------------------------------------------------
+checks:
+  expected_nodes: 20190
+  expected_links: 55005
+  expected_zones: 3649
+  # Model area: 12 full + partial Illinois counties (incl. Winnebago, Rockford), northwestern
+  # Indiana and southeastern Wisconsin [A p.12]. Extreme nodes are external zones.
+  bbox_lat: [40.5, 43.5]
+  bbox_lon: [-90.0, -86.0]
+  free_speed_mph: [5, 85]
+  # Unit check: median of @ftime / (LENGTH / @speed x 60) must be 1 within this tolerance.
+  # Links that differ follow CMAP's Ftime.Capacity free-speed rules (e.g. freeway 70 -> 65 mph);
+  # each (VDF, posted speed) group with a rule is listed in checks/ftime_vs_posted_speed.csv.
+  ftime_tolerance: 0.01
+  length_tolerance: 0.05       # |median LENGTH / straight-line distance - 1|
+  vdf_reproduced_codes: [5, 6, 7, 8]
+  vdf_reproduced_median_error: 0.01

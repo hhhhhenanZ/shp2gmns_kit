@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CMAP Planning Network</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<style>
+  :root{
+    --ink:#1b1f24; --muted:#5b6672; --line:#d8dee6; --bg:#fff; --panel:#f6f8fa;
+    --accent:#0b5cad; --good:#1a7f5a; --warn:#b4610f; --bad:#a8291f;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+       font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+  .wrap{max-width:1180px;margin:0 auto;padding:32px 16px 64px}
+  header{border-bottom:2px solid var(--ink);padding-bottom:14px;margin-bottom:22px}
+  h1{font-size:26px;margin:0 0 6px;letter-spacing:-.01em}
+  .sub{color:var(--muted);font-size:14px}
+  h2{font-size:19px;margin:34px 0 10px;padding-top:14px;border-top:1px solid var(--line)}
+  h3{font-size:15px;margin:22px 0 8px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+  p{margin:10px 0}
+  code{font:13px/1.4 ui-monospace,SFMono-Regular,Consolas,monospace;background:var(--panel);
+       padding:1px 5px;border-radius:3px}
+  .ladder{background:var(--panel);border-left:3px solid var(--accent);padding:14px 18px;margin:16px 0;
+          font-size:14px}
+  .ladder b{color:var(--accent)}
+  .tw{overflow-x:auto}
+  table{border-collapse:collapse;width:100%;margin:14px 0;font-size:13.5px}
+  th,td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{font-weight:600;border-bottom:1.5px solid var(--ink);white-space:nowrap}
+  td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+  tr.total td{font-weight:700;border-top:1.5px solid var(--ink)}
+  .big{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:18px 0}
+  .kpi{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:12px 14px}
+  .kpi .v{font-size:23px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+  .kpi .k{font-size:12px;color:var(--muted);margin-top:2px}
+  .ok{color:var(--good)} .hi{color:var(--bad)} .mid{color:var(--warn)}
+  #map{height:600px;border:1px solid var(--line);border-radius:6px}
+  .controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:12px 0}
+  button.per{border:1px solid var(--line);background:#fff;padding:6px 13px;border-radius:5px;
+             cursor:pointer;font:inherit;font-size:13px;color:var(--ink)}
+  button.per:hover{border-color:var(--accent)}
+  button.per.on{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+  .chk{font-size:13px;color:var(--muted);display:flex;align-items:center;gap:5px;cursor:pointer}
+  .legend{background:#fff;padding:8px 10px;border:1px solid var(--line);border-radius:5px;
+          font-size:12px;line-height:1.7;color:#1b1f24}
+  .legend i{display:inline-block;width:22px;height:4px;margin-right:6px;vertical-align:middle}
+  .note{font-size:13px;color:var(--muted);margin-top:8px}
+  .q{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:12px 16px;margin:10px 0}
+  .q b{color:var(--accent)}
+  .foot{margin-top:40px;padding-top:14px;border-top:1px solid var(--line);font-size:12.5px;color:var(--muted)}
+  .leaflet-popup-content{font-size:12.5px;line-height:1.45}
+  .leaflet-popup-content table{margin:4px 0;font-size:12px}
+  .leaflet-popup-content td,.leaflet-popup-content th{padding:2px 6px}
+  @media print{ #map{height:420px} .controls{display:none} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>CMAP Planning Network</h1>
+  <div class="sub">Chicago Open DTA dataset · CMAP trip-based model, c25q4 scenario 100 (2019) · PM peak 4–6 pm &nbsp;·&nbsp; October 27, 2026; assignment test added November 6, 2026</div>
+</header>
+
+<div class="big">
+  <div class="kpi"><div class="v">55,005</div><div class="k">directed GMNS links</div></div>
+  <div class="kpi"><div class="v">20,190</div><div class="k">nodes, Emme ids kept</div></div>
+  <div class="kpi"><div class="v">3,649</div><div class="k">zones, 1–3649, no renumbering</div></div>
+  <div class="kpi"><div class="v">3.53 M</div><div class="k">PM vehicle trips, 8 classes</div></div>
+  <div class="kpi"><div class="v ok">0.990</div><div class="k">OD vs trips leaving CMAP's centroids</div></div>
+  <div class="kpi"><div class="v ok">29 / 0</div><div class="k">gates passed / failed</div></div>
+</div>
+
+<h2>Interactive network</h2>
+<p>CMAP's own PM assignment on every road link except centroid connectors: 27,192 features, with two
+directions merged into one line. Click a link for both directions. Switch the measure to see where the
+network is loaded and where CMAP's model is congested.</p>
+
+<div class="controls">
+  <span style="font-size:13px;color:var(--muted)">Show:</span>
+  <button class="per on" data-mode="VOL">PM volume</button>
+  <button class="per" data-mode="TR">Congested / free-flow time</button>
+  <button class="per" data-mode="VC">V/C (CMAP VDF capacity)</button>
+  <button class="per" data-mode="FAC">Facility type</button>
+  <label class="chk"><input type="checkbox" id="zoneToggle"> zone centroids</label>
+  <label class="chk"><input type="checkbox" id="tollToggle"> tolled links</label>
+</div>
+<div id="map"></div>
+<div class="note" id="mapStats">loading…</div>
+
+<h2>1. Level 1 — Standardize the MPO network</h2>
+<div class="tw"><table>
+  <tr><th>Category</th><th>Value</th><th>Category</th><th>Value</th></tr>
+  <tr><td>Source model</td><td>CMAP trip-based, ON TO 2050</td><td>Time period</td><td><b>PM</b> (Emme period 7, 4–6 pm)</td></tr>
+  <tr><td>Scenario</td><td><b>c25q4, 100 = 2019 base</b></td><td>Demand classes</td><td><b>8</b></td></tr>
+  <tr><td>Emme links (directed)</td><td><b>55,005</b></td><td>PM vehicle trips</td><td><b>3,527,730</b></td></tr>
+  <tr><td>Directed GMNS links</td><td><b>55,005</b> (none dropped)</td><td>— written after the 0.01 floor</td><td>3,481,077 (98.7%)</td></tr>
+  <tr><td>Nodes</td><td><b>20,190</b></td><td>VDF codes</td><td>8 (arterial … metered ramp)</td></tr>
+  <tr><td>Zones</td><td><b>3,649</b></td><td>Capacity basis</td><td>veh/h/lane, LOS E (<code>@emcap</code>)</td></tr>
+  <tr><td>— internal / external</td><td>3,632 / 17</td><td>VDF</td><td>CMAP fd1–fd8 recorded; TAPLite form chosen in replay</td></tr>
+  <tr><td>Centroid connectors</td><td>7,264</td><td>CMAP results kept</td><td><code>ref_volume</code> = DATA1, <code>ref_time</code> = TIMAU</td></tr>
+  <tr><td>Connectivity</td><td class="ok"><b>one strongly connected network</b></td><td>Output columns</td><td>30 in <code>link.csv</code>, each with source and unit</td></tr>
+</table></div>
+
+<p>The conversion follows CMAP's own code, not only its documentation. Seven files from CMAP's public
+model repository (<code>Ftime_capacity.py</code>, <code>TOD_network_prep.py</code>, <code>vdf_tod.in</code>,
+<code>ttables.mac</code>, <code>tod_factors.p7</code>, <code>tod_flags.in</code>,
+<code>SOLA_assignment.py</code>) settle what the appendix leaves open.</p>
+
+<h3>The reconstruction is exact where it can be checked</h3>
+<p>Each test compares a converted value against a value CMAP itself stored or computed. No assignment is involved.</p>
+<div class="tw"><table>
+  <tr><th>Test</th><th class="n">Ours</th><th>CMAP's stored value</th><th>Agreement</th></tr>
+  <tr><td>PM volume <code>DATA1</code> vs extra attribute <code>@vadt</code></td><td class="n">55,005 links</td><td>max difference 0.0005 veh</td><td class="ok">exact</td></tr>
+  <tr><td>Congested time <code>TIMAU</code> vs <code>timau</code></td><td class="n">55,005 links</td><td>max difference 0.000001 min</td><td class="ok">exact</td></tr>
+  <tr><td>Lanes vs Emme transaction file <code>network_p7.txt</code></td><td class="n">55,005 / 55,005</td><td>same node and link counts</td><td class="ok">exact</td></tr>
+  <tr><td><code>@ftime</code> recomputed from binned <code>@speed</code></td><td class="n">100% of VDF 1–6, 8</td><td><code>Ftime_capacity.py</code> rule</td><td class="ok">exact</td></tr>
+  <tr><td>VDF 5, 8 at <code>DATA1</code> vs <code>TIMAU</code></td><td class="n">median −0.04%</td><td><code>vdf_tod.in</code> fd5, fd8</td><td class="ok">exact</td></tr>
+  <tr><td>PM SOV demand mf417 + mf427 + mf437</td><td class="n"><b>2,351,437</b></td><td><code>trip_roster</code> PM2 mode 1 = 2,351,437</td><td class="ok">exact</td></tr>
+  <tr><td>Our OD, trips between zones</td><td class="n"><b>3,035,518</b></td><td>trips leaving centroids in CMAP's network = 3,065,674</td><td class="ok">0.990</td></tr>
+</table></div>
+<p>The last test closes the loop between demand and network. The 1% gap is the park-and-ride first legs,
+which CMAP builds inside its run and does not export. The same test settles one fact the guide leaves
+implicit: <b>CMAP's stored link volumes are vehicles, not vehicle equivalents</b>. On a vehicle-equivalent
+basis the ratio would be 0.957.</p>
+<p>The code also settled four points the appendix states differently or not at all:</p>
+<ul>
+  <li><code>@ftime</code> rounds <code>@speed</code> up to a speed bin (freeway 70 → 65 mph; expressway at least 40);</li>
+  <li>the 0.75 capacity factor applies to VDF 1–5, not only arterials;</li>
+  <li><code>@toll</code> is dollars per link;</li>
+  <li>the emmemat period tables mf94–mf97 and mf14–mf18 hold period 8, not PM.</li>
+</ul>
+
+<h3>CMAP's own PM results, by facility</h3>
+<p>Read from the converted <code>link.csv</code> (<code>ref_volume</code>, <code>ref_time</code>,
+<code>vdf_fftt</code>). Delay = congested minus free-flow vehicle-hours.</p>
+<div class="tw"><table>
+  <tr><th>VDF</th><th>Facility</th><th class="n">Links</th><th class="n">Lane-miles</th>
+      <th class="n">VMT</th><th class="n">VHT</th><th class="n">Delay (veh-h)</th><th class="n">Speed (mph)</th></tr>
+  <tr><td>1</td><td>Arterial street</td><td class="n">41,861</td><td class="n">36,969</td><td class="n">16,836,841</td><td class="n">685,657</td><td class="n">234,550</td><td class="n">24.6</td></tr>
+  <tr><td>2</td><td>Freeway</td><td class="n">1,998</td><td class="n">5,512</td><td class="n">10,565,352</td><td class="n">239,959</td><td class="n">59,891</td><td class="n">44.0</td></tr>
+  <tr><td>3</td><td>Freeway → arterial ramp</td><td class="n">1,992</td><td class="n">586</td><td class="n">364,490</td><td class="n">15,912</td><td class="n">3,800</td><td class="n">22.9</td></tr>
+  <tr><td>4</td><td>Expressway</td><td class="n">930</td><td class="n">1,297</td><td class="n">1,436,129</td><td class="n">40,963</td><td class="n">9,399</td><td class="n">35.1</td></tr>
+  <tr><td>5</td><td>Freeway → freeway ramp</td><td class="n">664</td><td class="n">304</td><td class="n">338,540</td><td class="n">13,349</td><td class="n">4,165</td><td class="n">25.4</td></tr>
+  <tr><td>6</td><td>Zone centroid connector</td><td class="n">7,264</td><td class="n">5,052</td><td class="n">3,893,909</td><td class="n">194,696</td><td class="n">0</td><td class="n">20.0</td></tr>
+  <tr><td>7</td><td>Toll collection link</td><td class="n">188</td><td class="n">82</td><td class="n">67,954</td><td class="n">1,254</td><td class="n">0</td><td class="n">54.2</td></tr>
+  <tr><td>8</td><td>Metered entrance ramp</td><td class="n">108</td><td class="n">23</td><td class="n">19,478</td><td class="n">1,018</td><td class="n">241</td><td class="n">19.1</td></tr>
+  <tr class="total"><td></td><td>PM, 4–6 pm</td><td class="n">55,005</td><td class="n">49,824</td><td class="n">33,522,694</td><td class="n">1,192,807</td><td class="n">312,046</td><td class="n">28.1</td></tr>
+</table></div>
+<p>Without connectors, the road network carries 29.6 M VMT at 29.7 mph. In CMAP's PM run, 3,615 road links
+are above 1.0 of their VDF capacity, and 2,947 run at more than three times their free-flow time. Switch the
+map to "Congested / free-flow time" to see where.</p>
+
+<h3>Demand, PM</h3>
+<p>Built the way CMAP's <code>ttables.mac</code> builds its period-7 tables; factors from
+<code>tod_factors.p7</code>, which equal the data guide's TOD7 column. One file per class, in vehicles per
+2-hour period.</p>
+<div class="tw"><table>
+  <tr><th>Class</th><th>Source</th><th class="n">PM vehicles</th><th class="n">OD rows</th><th class="n">Kept at &gt; 0.01</th></tr>
+  <tr><td><code>sov</code></td><td>mf417 + mf427 + mf437 + 0.155 × mf8 (external autos)</td><td class="n">2,393,513</td><td class="n">818,885</td><td class="n">100.0%</td></tr>
+  <tr><td><code>hov2</code></td><td>mf447</td><td class="n">513,112</td><td class="n">342,932</td><td class="n">100.0%</td></tr>
+  <tr><td><code>hov3</code></td><td>mf457</td><td class="n">141,612</td><td class="n">204,014</td><td class="n">100.0%</td></tr>
+  <tr><td><code>apv</code></td><td>0.155 × mf10, airport zones only</td><td class="n">11,839</td><td class="n">26,944</td><td class="n">99.9%</td></tr>
+  <tr><td><code>btrk</code></td><td>0.176 × mf4 (B-plate)</td><td class="n">307,563</td><td class="n">1,338,781</td><td class="n">96.5%</td></tr>
+  <tr><td><code>ltrk</code></td><td>0.176 × mf5</td><td class="n">51,627</td><td class="n">718,863</td><td class="n mid">71.9%</td></tr>
+  <tr><td><code>mtrk</code></td><td>0.176 × mf6; pce 2</td><td class="n">48,066</td><td class="n">664,820</td><td class="n mid">70.9%</td></tr>
+  <tr><td><code>htrk</code></td><td>0.103 × (mf7 + mf9 external trucks); pce 3</td><td class="n">60,398</td><td class="n">659,707</td><td class="n mid">87.6%</td></tr>
+  <tr class="total"><td></td><td>total</td><td class="n">3,527,730</td><td class="n">4,774,946</td><td class="n">98.7%</td></tr>
+</table></div>
+<p><b>Demand floor.</b> The truck tables are dense: about 13 million positive cells each, most of them a
+small fraction of a trip. Cells at or below 0.01 vehicles are not written and are not rescaled. Autos keep
+over 99.9%. Light and medium trucks keep about 71%, and heavy trucks 88%.</p>
+
+<h2>2. Level 2 — Make the planning model openly executable</h2>
+<p><b>First run, preliminary (November 6, 2026).</b> TAPLite assigned the converted PM network and demand
+with one BPR function on every road link. Inputs, the TAPLite build, run scripts and the evaluation:
+<a href="https://github.com/hhhhhenanZ/city-tensor/tree/main/cmap_ta_bpr_allmodes"><code>city-tensor/cmap_ta_bpr_allmodes</code></a>.</p>
+<div class="tw"><table>
+  <tr><th>Setting</th><th>Value</th></tr>
+  <tr><td>Network, demand</td><td>this conversion: 55,005 links, 3,649 zones, 3,481,077 PM vehicles (all written cells)</td></tr>
+  <tr><td>Classes</td><td>5: <code>car</code> = sov + hov2 + hov3 + apv; <code>btrk</code>, <code>ltrk</code>; <code>mtrk</code> (pce 2); <code>htrk</code> (pce 3)</td></tr>
+  <tr><td>Volume-delay</td><td>BPR, α = 0.15, β = 4, on <code>@emcap</code> × lanes; connectors and toll links at <code>@ftime</code></td></tr>
+  <tr><td>Tolls, bus preload</td><td>not included</td></tr>
+  <tr><td>Run</td><td>10 iterations, relative gap 0.18 %, 7 min 43 s on 2 cores, 5.3 GB memory</td></tr>
+</table></div>
+<p>The four car modes are merged into one class because eight classes did not fit in 8 GB (about 8.5 GB
+needed). Without tolls the four car modes see the same costs, so link volumes are unchanged; only the split by
+car mode is lost.</p>
+<div class="tw"><table>
+  <tr><th>Facility</th><th class="n">VMT (M) TAPLite / CMAP</th><th class="n">ratio</th><th class="n">VHT (k) TAPLite / CMAP</th><th class="n">ratio</th><th class="n">Speed (mph) TAPLite / CMAP</th><th class="n">Volume R²</th></tr>
+  <tr><td>Arterial street</td><td class="n">15.38 / 16.84</td><td class="n">0.91</td><td class="n">427.8 / 685.7</td><td class="n mid">0.62</td><td class="n">36.0 / 24.6</td><td class="n">0.86</td></tr>
+  <tr><td>Freeway</td><td class="n">9.96 / 10.57</td><td class="n">0.94</td><td class="n">181.0 / 240.0</td><td class="n mid">0.75</td><td class="n">55.0 / 44.0</td><td class="n">0.92</td></tr>
+  <tr><td>Expressway</td><td class="n">1.12 / 1.44</td><td class="n mid">0.78</td><td class="n">24.8 / 41.0</td><td class="n mid">0.61</td><td class="n">45.2 / 35.1</td><td class="n">0.72</td></tr>
+  <tr><td>Freeway → arterial ramp</td><td class="n">0.36 / 0.36</td><td class="n">0.99</td><td class="n">12.7 / 15.9</td><td class="n">0.80</td><td class="n">28.4 / 22.9</td><td class="n">0.62</td></tr>
+  <tr><td>Freeway → freeway ramp</td><td class="n">0.30 / 0.34</td><td class="n">0.88</td><td class="n">8.7 / 13.3</td><td class="n">0.65</td><td class="n">34.3 / 25.4</td><td class="n">0.74</td></tr>
+  <tr><td>Toll collection link</td><td class="n">0.07 / 0.07</td><td class="n">1.04</td><td class="n">1.3 / 1.3</td><td class="n">1.05</td><td class="n">53.8 / 54.2</td><td class="n">0.90</td></tr>
+  <tr><td>Metered entrance ramp</td><td class="n">0.02 / 0.02</td><td class="n">1.14</td><td class="n">1.0 / 1.0</td><td class="n">1.02</td><td class="n">21.3 / 19.1</td><td class="n">0.61</td></tr>
+  <tr class="total"><td>Road links</td><td class="n">27.22 / 29.63</td><td class="n">0.92</td><td class="n">657.4 / 998.1</td><td class="n">0.66</td><td class="n">41.4 / 29.7</td><td class="n">0.93</td></tr>
+</table></div>
+<img src="fig_bpr_vmt_vht.png" alt="VMT, VHT and speed by facility type, TAPLite (BPR 0.15, 4) against CMAP's PM assignment" style="width:100%;height:auto;border:1px solid var(--line);border-radius:6px;margin:8px 0">
+<p><b>Reading.</b> Route choice is right: volumes follow CMAP on freeways and arterials (VMT 0.94 and 0.91,
+R² 0.92 and 0.86). Delay is not: TAPLite's network delay is 34 thousand vehicle-hours against CMAP's 312
+thousand, so speeds are 25–46 % higher. Where CMAP has no delay the link times agree; where CMAP is congested,
+BPR (0.15, 4) on <code>@emcap</code> adds much less. CMAP's functions are steeper (0.75 × capacity, β = 8 on
+freeways) and add signal delay on arterials (arterial median time ratio 0.77). Expressways carry 0.78 of CMAP's
+traffic because the run has no tolls, so the parallel tollways attract more.</p>
+<div class="q">Two choices are still open:
+<ul>
+  <li><b>VDF form.</b> The BPR test above is too flat. The next candidates are BPR with CMAP's own α, β and
+  the 0.75 capacity factor, or a BPR fitted to each CMAP curve (fd1–fd8). CMAP's min-term (fd2, fd4) and
+  Webster signal delay (fd1, fd3) are not TAPLite functions.</li>
+  <li><b>Bus preload.</b> CMAP counts buses as 3 vehicle equivalents each (<code>el2</code>). These are not
+  exported, so the runs so far are without them.</li>
+</ul></div>
+
+<h2>3. Compare demand, VMT, VHT, speed and network behavior</h2>
+<p>All links including connectors, 4–6 pm. “Ours” is the first TAPLite run above (BPR 0.15, 4; no tolls).
+Delay is congested minus free-flow vehicle-hours.</p>
+<div class="tw"><table>
+  <tr><th>Measure</th><th class="n">Ours</th><th class="n">CMAP, PM</th><th class="n">Ratio</th></tr>
+  <tr><td>Demand (vehicle trips between zones)</td><td class="n">3,035,518</td><td class="n">3,065,674</td><td class="n ok">0.990</td></tr>
+  <tr><td>Link volume (vehicles)</td><td class="n">54,301,914</td><td class="n">56,908,112</td><td class="n ok">0.954</td></tr>
+  <tr><td>VMT (vehicle-miles)</td><td class="n">31,016,448</td><td class="n">33,522,694</td><td class="n ok">0.925</td></tr>
+  <tr><td>VHT (vehicle-hours)</td><td class="n">847,447</td><td class="n">1,192,807</td><td class="n mid">0.710</td></tr>
+  <tr><td>Delay (vehicle-hours)</td><td class="n">33,952</td><td class="n">312,046</td><td class="n hi">0.109</td></tr>
+  <tr><td>Average speed (mph)</td><td class="n">36.6</td><td class="n">28.1</td><td class="n mid">1.302</td></tr>
+  <tr><td>Link volume R², road links</td><td class="n"></td><td class="n"></td><td class="n ok">0.93</td></tr>
+</table></div>
+
+<h2>4. Align the digital network with real-world observations</h2>
+<p>Partly possible already, which is where Chicago differs from SCAG. The dataset holds 2023 INRIX TMC speeds,
+hourly, on 18 corridor-directions, with fitted QVDF parameters per TMC. These are mapped to the OSM
+City-of-Chicago network today; the next step maps the same TMCs to CMAP links. <b>Counts are still missing:</b>
+every corridor demand is derived from speed. IDOT AADT is the first independent volume check to add.</p>
+
+<div class="foot">
+  Sources: CMAP Travel Demand Model Data User Guide (c25q4), <a href="https://datahub.cmap.illinois.gov/documents/a14d641dbe184704ab597479b103986c/explore">CMAP Data Hub</a>;
+  <a href="https://cmap.illinois.gov/wp-content/uploads/ON-TO-2050-Update-Travel-Demand-Model-Documentation-Appendix.pdf">ON TO 2050 travel demand model appendix</a>;
+  <a href="https://github.com/CMAP-REPOS/cmap_trip-based_model">CMAP trip-based model code</a> (commit e52b318).
+  Rules and units: <a href="../CMAP_network_conversion_reference.pdf"><code>CMAP_network_conversion_reference.pdf</code></a>;
+  printable version: <a href="CMAP_progress_report.pdf"><code>CMAP_progress_report.pdf</code></a>.
+  Map data: <code>cmap_report_data.js</code> must sit beside this file. Basemap tiles (Esri) and the mapping library load from the internet.
+</div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="cmap_report_data.js"></script>
+<script>
+const FAC = {1:'Arterial street',2:'Freeway',3:'Freeway → arterial ramp',4:'Expressway',
+  5:'Freeway → freeway ramp',7:'Toll collection link',8:'Metered entrance ramp'};
+const FCOL = {2:'#c5221f',4:'#fa7b17',1:'#7a8590',3:'#1a73e8',5:'#1a73e8',8:'#7d3cb5',7:'#0b8a8f'};
+const FW = {2:3.4,4:2.6,1:1.0,3:1.6,5:1.6,8:2,7:3};
+const F = CMAP_DATA.fields; const ix = Object.fromEntries(F.map((k,i)=>[k,i]));
+
+const map = L.map('map', {preferCanvas:true}).setView([41.86,-87.85], 10);
+const gray = L.tileLayer(
+  'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+  {attribution:'Tiles &copy; Esri', maxZoom:16}).addTo(map);
+const topo = L.tileLayer(
+  'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',
+  {attribution:'Tiles &copy; Esri', maxZoom:18});
+const img = L.tileLayer(
+  'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+  {attribution:'Tiles &copy; Esri', maxZoom:18});
+L.control.layers({'Esri light gray':gray, 'Esri topographic':topo, 'Esri imagery':img}, null,
+  {position:'topright'}).addTo(map);
+
+const SCALES = {
+  VOL:[[500,'#34a853',1.0],[2000,'#a8c83a',1.6],[5000,'#fbbc04',2.2],[10000,'#fa7b17',3.0],[1e12,'#c5221f',4.2]],
+  TR: [[1.2,'#34a853',1.0],[1.5,'#a8c83a',1.6],[2,'#fbbc04',2.2],[3,'#fa7b17',3.0],[1e12,'#c5221f',4.0]],
+  VC: [[0.5,'#34a853',1.0],[0.8,'#a8c83a',1.6],[1.0,'#fbbc04',2.2],[1.2,'#fa7b17',3.0],[1e12,'#c5221f',4.0]]};
+const BANDS = {
+  VOL:['under 500','500–2,000','2,000–5,000','5,000–10,000','over 10,000'],
+  TR: ['up to 1.2 × free-flow','1.2–1.5','1.5–2','2–3','over 3 × free-flow'],
+  VC: ['up to 0.5','0.5–0.8','0.8–1.0','1.0–1.2','over 1.2']};
+const TITLE = {VOL:'PM volume, two-way (veh / 2 h)', TR:'Congested / free-flow time (worse direction)',
+  VC:'V/C, CMAP VDF capacity (worse direction)', FAC:'Facility type (CMAP VDF code)'};
+
+function val(d, mode){
+  const a = (k)=>d[ix[k]];
+  if(mode==='VOL') return (a('vol_ab')||0)+(a('vol_ba')||0);
+  if(mode==='TR') return Math.max(a('tr_ab')||0, a('tr_ba')||0);
+  if(mode==='VC') return Math.max(a('vc_ab')||0, a('vc_ba')||0);
+  return null;
+}
+function styleFor(d, mode){
+  if(mode==='FAC'){ const f=d[ix.vdf]; return {color:FCOL[f]||'#888', weight:FW[f]||1, opacity:.9}; }
+  const v = val(d, mode);
+  if(mode==='VC' && d[ix.cap_vphpl]===0) return {color:'#c4c9d0', weight:1, opacity:.6};
+  for(const [t,c,w] of SCALES[mode]) if(v<=t) return {color:c, weight:w, opacity:.9};
+}
+const fmt = (x,dg=0)=> x===null||x===undefined ? '—' : Number(x).toLocaleString(undefined,{maximumFractionDigits:dg,minimumFractionDigits:dg});
+
+const layer = L.layerGroup().addTo(map);
+const polys = CMAP_DATA.links.map(d=>{
+  const p = L.polyline(d[ix.coords].map(c=>[c[1],c[0]]), styleFor(d,'VOL'));
+  p.bindPopup(()=>{
+    const row = (lab,id,ln,v,tr,vc)=> id===null ? '' :
+      `<tr><td>${lab} <span style="color:#888">${id}</span></td><td align=right>${ln}</td><td align=right>${fmt(v)}</td><td align=right>${fmt(tr,2)}</td><td align=right>${fmt(vc,2)}</td></tr>`;
+    return `<b>${FAC[d[ix.vdf]]||'VDF '+d[ix.vdf]}</b> &nbsp;<span style="color:#666">VDF ${d[ix.vdf]}</span><br>
+      capacity ${d[ix.cap_vphpl] ? fmt(d[ix.cap_vphpl])+' veh/h/lane' : 'placeholder (no constraint)'}${d[ix.toll] ? ' · toll $'+fmt(d[ix.toll],2) : ''}
+      <table><tr><th align=left>direction</th><th>lanes</th><th>PM veh</th><th>t/t0</th><th>V/C</th></tr>
+      ${row('A→B',d[ix.id_ab],d[ix.lanes_ab],d[ix.vol_ab],d[ix.tr_ab],d[ix.vc_ab])}
+      ${row('B→A',d[ix.id_ba],d[ix.lanes_ba],d[ix.vol_ba],d[ix.tr_ba],d[ix.vc_ba])}</table>
+      <span style="color:#888">CMAP c25q4, scenario 100, 4–6 pm</span>`;
+  });
+  p.addTo(layer);
+  return p;
+});
+
+const ZC = {internal:'#5b6672', cbd:'#0b5cad', external:'#b4610f', airport:'#7d3cb5'};
+const zoneLayer = L.layerGroup();
+CMAP_DATA.zones.forEach(([z,x,y,t])=>{
+  L.circleMarker([y,x], {radius:t==='internal'?2:5, color:ZC[t], weight:1, fillOpacity:.75})
+   .bindPopup(`<b>Zone ${z}</b><br>${t==='cbd'?'CBD (flag 1)':t==='airport'?'airport zone (flag ≥ 2)':t==='external'?'external point of entry':'internal'}`)
+   .addTo(zoneLayer);
+});
+const tollLayer = L.layerGroup();
+CMAP_DATA.links.filter(d=>d[ix.toll]>0).forEach(d=>{
+  L.polyline(d[ix.coords].map(c=>[c[1],c[0]]), {color:'#0b8a8f', weight:7, opacity:.55})
+   .bindPopup(`<b>Tolled link</b> ${d[ix.id_ab]}<br>toll $${fmt(d[ix.toll],2)} per crossing<br>${FAC[d[ix.vdf]]}`)
+   .addTo(tollLayer);
+});
+
+const legend = L.control({position:'bottomright'});
+legend.onAdd = function(){ this._div = L.DomUtil.create('div','legend'); return this._div; };
+legend.addTo(map);
+
+function render(mode){
+  let total = 0, over = 0;
+  CMAP_DATA.links.forEach((d,i)=>{
+    polys[i].setStyle(styleFor(d, mode));
+    const v = val(d, mode);
+    if(mode==='VOL') total += v;
+    if(mode==='TR' && v>3) over++;
+    if(mode==='VC' && v>1) over++;
+  });
+  let html = `<b>${TITLE[mode]}</b><br>`;
+  if(mode==='FAC'){
+    html += [2,4,1,3,8,7].map(f=>`<i style="background:${FCOL[f]};height:${Math.max(2,FW[f])}px"></i>${f} ${FAC[f]}`).join('<br>');
+  } else {
+    html += SCALES[mode].map(([t,c],k)=>`<i style="background:${c}"></i>${BANDS[mode][k]}`).join('<br>');
+    if(mode==='VC') html += `<br><i style="background:#c4c9d0"></i>toll link, no capacity`;
+  }
+  legend._div.innerHTML = html;
+  const n = CMAP_DATA.links.length.toLocaleString();
+  document.getElementById('mapStats').textContent =
+    mode==='VOL' ? `${n} features (connectors not drawn) · total ${Math.round(total).toLocaleString()} vehicles on drawn links`
+    : mode==='TR' ? `${n} features · ${over.toLocaleString()} with a direction above 3 × free-flow time`
+    : mode==='VC' ? `${n} features · ${over.toLocaleString()} with a direction above V/C 1.0 (VDF capacity = 0.75 × @emcap × lanes × 2 h; metered ramps without 0.75)`
+    : `${n} features · CMAP VDF code`;
+}
+render('VOL');
+document.querySelectorAll('button.per').forEach(b=>{
+  b.onclick = ()=>{ document.querySelectorAll('button.per').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on'); render(b.dataset.mode); };
+});
+document.getElementById('zoneToggle').onchange = e => e.target.checked ? zoneLayer.addTo(map) : map.removeLayer(zoneLayer);
+document.getElementById('tollToggle').onchange = e => e.target.checked ? tollLayer.addTo(map) : map.removeLayer(tollLayer);
+</script>
+</body>
+</html>

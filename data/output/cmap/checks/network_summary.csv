@@ -1,0 +1,9 @@
+﻿vdf_code,facility_type,links,miles,lane_miles,lanes_min,lanes_median,lanes_max,capacity_vphpl_median,capacity_vphpl_range,free_speed_mph_median,pm_vmt
+1,arterial street,41861,30632.2,36969.3,1,1.0,6,790.0,288-1449,35.0,16836841
+2,freeway,1998,2047.1,5512.2,1,3.0,7,2000.0,1140-2000,55.0,10565352
+3,freeway-arterial ramp,1992,547.8,586.1,1,1.0,4,1450.0,620-1600,30.0,364490
+4,expressway,930,595.4,1296.6,1,2.0,5,1700.0,1020-2000,45.0,1436129
+5,freeway-freeway ramp,664,229.0,303.5,1,1.0,4,1450.0,1060-1600,30.0,338540
+6,zone centroid connector,7264,5051.6,5051.6,1,1.0,1,placeholder 99999,-,20.0,3893909
+7,toll collection link,188,31.0,81.8,1,2.0,9,placeholder 99999,-,30.0,67954
+8,metered entrance ramp,108,23.1,23.1,1,1.0,1,720.0,720-720,25.0,19478

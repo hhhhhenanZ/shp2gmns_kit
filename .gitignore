@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.pyc
+
+# LaTeX build files
+*.aux
+*.log
+*.out
+*.toc
+*.synctex.gz
+*.fdb_latexmk
+*.fls
+
+# CMAP input data: download from the CMAP Data Hub (see README)
+data/input/cmap/network/
+data/input/cmap/docs/*.pdf
+data/input/cmap/docs/*.html
+# CMAP model code has no license: keep only the README with links
+data/input/cmap/docs/cmap_code/*
+!data/input/cmap/docs/cmap_code/README.md
+
+# Converted network and demand: published as a Release zip (cmap_PM_gmns.zip)
+data/output/cmap/network/
+data/output/cmap/demand/
+
+# Assignment and analysis outputs of any region
+data/output/**/runs/
+data/output/**/analysis/
+runs/

@@ -1,0 +1,11 @@
+﻿vdf_code,facility_type,_speed,links,links_differing,free_speed_from_ftime_mph_median,free_speed_from_ftime_mph_min,free_speed_from_ftime_mph_max
+2,freeway,30.0,4,4,40.0,40.0,40.0
+2,freeway,70.0,360,360,65.0,65.0,65.0
+3,freeway-arterial ramp,55.0,1,1,50.0,50.0,50.0
+4,expressway,25.0,2,2,40.0,40.0,40.0
+4,expressway,30.0,75,75,40.0,40.0,40.0
+4,expressway,35.0,79,79,40.0,40.0,40.0
+5,freeway-freeway ramp,55.0,108,108,50.0,50.0,50.0
+5,freeway-freeway ramp,65.0,3,3,50.0,50.0,50.0
+7,toll collection link,55.0,12,1,55.0,30.0,55.0
+8,metered entrance ramp,30.0,108,108,25.0,19.8,27.6

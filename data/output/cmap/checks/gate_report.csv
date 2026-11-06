@@ -1,0 +1,47 @@
+﻿gate,check,status,value,expected
+G1,node count,PASS,20190,20190
+G1,link count,PASS,55005,55005
+G1,"zones flagged ISZONE = 1, ids contiguous",PASS,"3649 zones, ids 1-3649","3649 zones, ids 1-3649"
+G1,every link end is a node,PASS,0,0
+G2,"shapefile joined to extra attributes on (i, j)",PASS,55005 / 55005,55005 / 55005
+G3,lanes >= 1,PASS,0,0
+G4,@emcap > 0 on every VDF 1-5 and 8 link,PASS,0,0
+G5,"placeholder 99999 only on VDF 6 and 7, alpha 0",PASS,"7452 links (VDF 6: 7264, VDF 7: 188)",VDF 6 + VDF 7 count
+G5,road links touching a zone keep @emcap (not treated as connectors),PASS,"32 links, VDF [1, 2, 4]",all cmap_emcap
+G6,one strongly connected network,PASS,0 nodes / 0 zones outside the largest component,0 / 0
+G7,every zone has an outgoing and an incoming link,PASS,0,0
+G8,coordinates inside the CMAP region,PASS,"lat 40.994-42.967, lon -89.456--86.484","lat [40.5, 43.5], lon [-90.0, -86.0]"
+G9,ref_volume (DATA1) = @vadt,PASS,max diff 0.0005,equal
+G9,ref_time and timau (TIMAU) = attribs timau,PASS,max diff 1e-06,equal
+G10,VDF 1 arterial street: median error vs CMAP timau,INFO,-0.2179,reported
+G10,VDF 2 freeway: median error vs CMAP timau,INFO,-0.0951,reported
+G10,VDF 3 freeway-arterial ramp: median error vs CMAP timau,INFO,-0.0004,reported
+G10,VDF 4 expressway: median error vs CMAP timau,INFO,-0.0131,reported
+G10,VDF 5 freeway-freeway ramp: median error vs CMAP timau,PASS,-0.0004,|e| < 0.01
+G10,VDF 6 zone centroid connector: median error vs CMAP timau,PASS,0.0,|e| < 0.01
+G10,VDF 7 toll collection link: median error vs CMAP timau,PASS,0.0,|e| < 0.01
+G10,VDF 8 metered entrance ramp: median error vs CMAP timau,PASS,-0.0004,|e| < 0.01
+G10,VDF 2 freeway (without the /1.15 on T0),INFO,0.0407,reported
+G11,free speed 5-85 mph on non-connector links,INFO,0 outside (listed in checks/free_speed_outliers.csv),reported
+G11,links with @speed = 0,INFO,159 (VDF [7]),reported
+G11,"units: median @ftime / (LENGTH / @speed x 60) = 1 (min, mi, mph)",PASS,median 1.0000; 0.9844 of 47582 links exactly,1.00 within 1%
+G11,"links where @ftime follows a CMAP free-speed rule, not @speed",INFO,"741 links in 10 (VDF, posted speed) groups (checks/ftime_vs_posted_speed.csv)",reported; @ftime is used as given
+G11,connector effective speed LENGTH / @ftime,INFO,20.0 mph,reported (posted 30)
+G11,units: LENGTH (mi) vs straight-line node distance (US ft / 5280),PASS,median ratio 1.005,within 5% of 1
+G12,node count = network_p7.txt,PASS,20190,20190
+G12,link count = network_p7.txt,PASS,55005,55005
+G12,lanes = network_p7.txt,PASS,1.0000 equal,1.0000
+G12,every link has a line geometry,PASS,0,0
+D1,every .emx is 3649 x 3649 float32,PASS,12 matrices read,"53,260,804 bytes each"
+D2,zone ids 1-3649 are centroids in node.csv,PASS,3649 centroids,1-3649
+D3,"every demand file has o_zone_id,d_zone_id,volume and > 0 rows",PASS,8 files,8 files
+D4,mf417 + mf427 + mf437 = trip_roster PM2 mode 1,PASS,"2,351,437.0","2,351,437"
+D5,demand modes = allowed_use modes,PASS,"demand ['apv', 'btrk', 'hov2', 'hov3', 'htrk', 'ltrk', 'mtrk', 'sov']","allowed_use ['apv', 'btrk', 'hov2', 'hov3', 'htrk', 'ltrk', 'mtrk', 'sov']"
+D6,sov: share kept at volume > 0.01,INFO,100.00% (30 veh dropped),reported
+D6,hov2: share kept at volume > 0.01,INFO,100.00% (0 veh dropped),reported
+D6,hov3: share kept at volume > 0.01,INFO,100.00% (0 veh dropped),reported
+D6,apv: share kept at volume > 0.01,INFO,99.92% (10 veh dropped),reported
+D6,btrk: share kept at volume > 0.01,INFO,"96.54% (10,632 veh dropped)",reported
+D6,ltrk: share kept at volume > 0.01,INFO,"71.88% (14,519 veh dropped)",reported
+D6,mtrk: share kept at volume > 0.01,INFO,"70.87% (14,000 veh dropped)",reported
+D6,htrk: share kept at volume > 0.01,INFO,"87.64% (7,463 veh dropped)",reported

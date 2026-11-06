@@ -1,0 +1,9 @@
+﻿vdf_code,name,form,alpha,exponent,capacity_factor,capacity_add_veh,min_term,ftime_divisor_documented,intersection_delay,capacity_written,taplite_vdf_type,taplite_alpha,taplite_beta,taplite_status,source
+1,arterial street,"ul1 [1 + 0.15 (v/ul2)^4] + signal delay from ul3 (@cycle, @gc), capped at one cycle",0.15,4,0.75,0,False,1.0,True,@emcap (veh/h/lane),,,,open: chosen in the replay step,C vdf_tod.in fd1; A pp.123-124
+2,freeway,"[1 + 0.15 min(v/ul2, 1)] (ul1 / 1.15) [1 + 0.15 (v / (ul2 + 300))^8]",0.15,8,0.75,300,True,1.15,False,@emcap (veh/h/lane),,,,open: chosen in the replay step,C vdf_tod.in fd2; A p.124
+3,freeway-arterial ramp,same as fd1,0.15,4,0.75,0,False,1.0,True,@emcap (veh/h/lane),,,,open: chosen in the replay step,C vdf_tod.in fd3; A pp.123-124
+4,expressway,"[1 + 0.15 min(v/ul2, 1)] ul1 [1 + 0.15 (v/ul2)^8]",0.15,8,0.75,0,True,1.0,False,@emcap (veh/h/lane),,,,open: chosen in the replay step,C vdf_tod.in fd4; A p.125
+5,freeway-freeway ramp,ul1 [1 + 0.15 (v/ul2)^8],0.15,8,0.75,0,False,1.0,False,@emcap (veh/h/lane),,,,open: chosen in the replay step,C vdf_tod.in fd5; A p.125
+6,zone centroid connector,fixed: t = length x 3 min,0.0,1,1.0,0,False,1.0,False,placeholder 99999,0,0.0,1.0,set: fixed time t = @ftime,C vdf_tod.in fd6 = length x 3 (20 mph)
+7,toll collection link,fixed: t = @ftime (speed of incoming link); no capacity constraint,0.0,1,1.0,0,False,1.0,False,placeholder 99999,0,0.0,1.0,set: fixed time t = @ftime,C vdf_tod.in fd7 = ul1; A p.126
+8,metered entrance ramp,"ul1 [1 + 0.15 (v/ul2)^10], ul2 = 720 x lanes x hours",0.15,10,1.0,0,False,1.0,False,@emcap (veh/h/lane),,,,open: chosen in the replay step,C vdf_tod.in fd8; A pp.125-126

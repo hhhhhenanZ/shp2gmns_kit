@@ -1,0 +1,156 @@
+# =============================================================================
+#  region.yaml  —  the one file you edit for a new network
+# =============================================================================
+#  The values below are the worked example for NVTA (MWCOG Ver2.4 Cube network).
+#  For another network, change the paths first, then any field names that differ.
+#  Paths may be relative to this file's folder, or absolute.
+#  "{P}" in a field name is replaced by the upper-case period key (AM, MD, PM, NT).
+# =============================================================================
+
+region:
+  name: NVTA
+  description: Northern Virginia, MWCOG Ver2.4 Cube highway network
+
+# ---- where your files are ---------------------------------------------------
+input:
+  network_shapefile: data/input/network/DTALiteNetworkInput.shp
+  demand_folder: data/input/demand          # OMX files, one per period
+
+output:
+  root: data/output                         # network/ demand/ runs/ analysis/ go here
+
+# ---- time periods ------------------------------------------------------------
+# Keys must be am, md, pm or nt (the converter only knows these four).
+# Hours are clock hours. A period that crosses midnight is cut at 24:00 by TAPlite.
+periods:
+  am: {start_hour: 6,  end_hour: 9}
+  md: {start_hour: 9,  end_hour: 15}
+  pm: {start_hour: 15, end_hour: 19}
+  nt: {start_hour: 19, end_hour: 6}
+
+# ---- Cube assignment results carried in the shapefile ------------------------
+# Used to build ref_volume, derive the conical parameters, and compare with TAPlite.
+cube_fields:
+  volume:            I4{P}VOL       # assigned vehicles
+  vc_ratio:          I4{P}VC        # volume / capacity
+  travel_time_ratio: I4{P}VDF       # congested time / free-flow time
+  speed:             I4{P}SPD       # congested speed, mph
+  free_speed:        I4{P}FFSPD     # free-flow speed, mph
+  vmt:               I4{P}VMT
+  link_capacity:     "{P}HRLKCAP"   # hourly link capacity
+  lane_capacity:     "{P}HRLNCAP"   # hourly lane capacity
+  limit:             "{P}LIMIT"     # lane-use restriction code
+  street_name:       STREETNAME
+  toll_group:        TOLLGRP
+  jurisdiction:      JUR
+  # Periods where the pattern above does not hold. NVTA stores AM and PM capacity
+  # with a leading "I"; MD and NT do not.
+  overrides:
+    am: {link_capacity: IAMHRLKCAP, lane_capacity: IAMHRLNCAP}
+    pm: {link_capacity: IPMHRLKCAP, lane_capacity: IPMHRLNCAP}
+
+# Cube assigned volume by mode. Keys are the six TAPlite modes.
+mode_volume_fields:
+  sov:  I4{P}SOV
+  hov2: I4{P}HV2
+  hov3: I4{P}HV3
+  com:  I4{P}CV
+  trk:  I4{P}TRK
+  apv:  I4{P}APX
+
+street_name_placeholder: "0"        # Cube's value for "no name"; becomes blank
+
+# ---- mode_type.csv (value of time $/h, passenger-car equivalent, occupancy) --
+mode_types:
+  am:
+    - {mode: sov,  vot: 24, pce: 1, occ: 1}
+    - {mode: hov2, vot: 40, pce: 1, occ: 2}
+    - {mode: hov3, vot: 60, pce: 1, occ: 3.5}
+    - {mode: com,  vot: 30, pce: 1, occ: 1}
+    - {mode: trk,  vot: 30, pce: 1, occ: 1}
+    - {mode: apv,  vot: 30, pce: 1, occ: 1.6}
+  md:
+    - {mode: sov,  vot: 20, pce: 1, occ: 1}
+    - {mode: hov2, vot: 15, pce: 1, occ: 2}
+    - {mode: hov3, vot: 15, pce: 1, occ: 3.5}
+    - {mode: com,  vot: 30, pce: 1, occ: 1}
+    - {mode: trk,  vot: 30, pce: 1, occ: 1}
+    - {mode: apv,  vot: 30, pce: 1, occ: 1.6}
+  pm:
+    - {mode: sov,  vot: 20, pce: 1, occ: 1}
+    - {mode: hov2, vot: 30, pce: 1, occ: 2}
+    - {mode: hov3, vot: 60, pce: 1, occ: 3.5}
+    - {mode: com,  vot: 30, pce: 1, occ: 1}
+    - {mode: trk,  vot: 30, pce: 1, occ: 1}
+    - {mode: apv,  vot: 30, pce: 1, occ: 1.6}
+  nt:
+    - {mode: sov,  vot: 20, pce: 1, occ: 1}
+    - {mode: hov2, vot: 15, pce: 1, occ: 2}
+    - {mode: hov3, vot: 15, pce: 1, occ: 3.5}
+    - {mode: com,  vot: 30, pce: 1, occ: 1}
+    - {mode: trk,  vot: 30, pce: 1, occ: 1}
+    - {mode: apv,  vot: 30, pce: 1, occ: 1.6}
+
+# ---- conical delay function --------------------------------------------------
+conic:
+  connector_ftype: 0              # facility type that gets no delay
+  # "derive" fits alpha per facility x area-type cell from Cube's own output.
+  # To use a published table instead, give a CSV path with FTYPE, ATYPE, alpha.
+  alpha_table: derive
+  # Cube period capacity factor E. Leave blank to derive it from Cube's output.
+  # (NVTA derived values: am 2.39808, md 5.64972, pm 3.40136, nt 6.66667)
+  period_factor_E:
+  identifiability:                # when a cell has too little data to fit alpha
+    min_observations: 30
+    min_vc: 0.20
+    tolerance: 0.01
+    scale: 0.30
+
+# ---- labels used in the analysis tables --------------------------------------
+classification:
+  link_type_divisor: 100          # link_type = 100 x area type + facility type
+  documented_area_types: [1, 2, 3, 4, 5, 6, 7]
+  facility_types:
+    0: centroid connector
+    1: freeway
+    2: major arterial
+    3: minor arterial
+    4: collector
+    5: expressway
+    6: ramp
+  limit_codes:
+    0: general purpose
+    2: HOV2+
+    3: HOV3+
+    4: no trucks
+    5: airport access only
+    9: closed
+  hov_limit_codes: [2, 3]
+  closed_limit_code: 9
+
+# ---- analysis ----------------------------------------------------------------
+analysis:
+  hov3_occupancy_sensitivity: [3.0, 3.5]
+  # Named corridors: a regular expression matched against the link name.
+  corridors:
+    - {name: I-66,                       pattern: '^I-66\b'}
+    - {name: I-95,                       pattern: '^I-95(?!\d)'}
+    - {name: I-395,                      pattern: '^I-395\b'}
+    - {name: I-495 Capital Beltway,      pattern: '^I-495\b(?!.*Express)'}
+    - {name: I-495 Express Lanes,        pattern: '^I-495 Express'}
+    - {name: I-95 Express Lanes,         pattern: '^I-95 Express'}
+    - {name: VA 267 Dulles Toll Road,    pattern: '^VA 267 - Dulles Toll'}
+    - {name: VA 267 Dulles Greenway,     pattern: '^VA 267 - Dulles Green'}
+    - {name: VA 286 Fairfax County Pkwy, pattern: '^VA 286\b'}
+    - {name: VA 28 Sully Road,           pattern: '^VA 28 - Sully'}
+    - {name: VA 7 Harry Byrd Hwy,        pattern: '^VA 7\b'}
+    - {name: US 29 Columbia Pike,        pattern: '^US 29\b'}
+    - {name: US 50,                      pattern: '^US 50\b'}
+    - {name: US 1,                       pattern: '^US 1\b'}
+    - {name: GW Memorial Parkway,        pattern: '^(George Washington|GW) Memorial'}
+    - {name: Dulles Airport Access Rd,   pattern: '^Dulles Airport Access'}
+
+# ---- assignment --------------------------------------------------------------
+assignment:
+  iterations: [1, 20]             # one run folder per value
+  processors: 10
