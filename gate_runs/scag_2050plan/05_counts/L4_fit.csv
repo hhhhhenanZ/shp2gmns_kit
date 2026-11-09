@@ -1,0 +1,2 @@
+gate,status,reason,requested_from,requested_on
+L4,FAIL (comparison pending),"Screenline counts delivered by SCAG on 2026-10-15 (Q3, shared folder; see SCAG_data_delivery_2026-10-15.md); the comparison (assigned vs count by screenline and direction, R2 and slope by facility type) is not produced yet and is left for the next person to complete",SCAG (Hui Deng),delivered 2026-10-15

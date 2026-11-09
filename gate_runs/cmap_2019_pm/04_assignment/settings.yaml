@@ -1,0 +1,30 @@
+period: PM 16-18 h
+classes:
+- car
+- btrk
+- ltrk
+- mtrk
+- htrk
+merged_classes:
+  car:
+  - sov
+  - hov2
+  - hov3
+  - apv
+memory_limit_gb: 8
+reason_for_merge: '8 classes need about 8.5 GB; limit is 8 GB. No tolls, same allowed
+  links, pce 1: link volumes unchanged; per-car-class volumes not produced.'
+vdf:
+  form: bpr
+  alpha: 0.15
+  beta: 4
+  plf: 1.0
+  fixed_time_codes:
+  - 6
+  - 7
+tolls: not used (TAPLite multi-class runs do not read toll; CMAP adds @toll as cost)
+bus_preload: none
+iterations: 10
+processors: 2
+first_through_node_id: 5001
+engine: ../08_ftt_chicago/engine

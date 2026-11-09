@@ -1,0 +1,2 @@
+gate,status,reason,requested_from,requested_on
+L4,BLOCKED (question),"2023 IDOT AADT is in hand and already matched to the City of Chicago network: 26,312 links (count year >= 2022), converted to 4-6 pm directional volume as AADT x w x h x D with IDOT factors (Dataset/04_aadt/idot_aadt_pipeline, aadt_pm2h_by_link.csv; method AADT_to_PM_volume_method.md); used for the 2023 city model (R5a, VMT ratio 1.04). Not used here: this run is 2019 on CMAP links. Asked whether the 2023 counts may be used here",Dr. Zhou (question on use of 2023 AADT),2026-11-09

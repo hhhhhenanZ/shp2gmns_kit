@@ -1,0 +1,2 @@
+gate,status,reason,requested_from,requested_on
+L6,BLOCKED,transit network not considered for now; highway network and highway demand only,,

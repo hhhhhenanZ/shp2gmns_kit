@@ -1,0 +1,38 @@
+period,item,class,value,reference,identity,pass
+PM,nodes,all,20190,20190,= records in 00_raw emme_nodes.dbf,1
+PM,links,all,55005,55005,= records in 00_raw emme_links.dbf,1
+PM,zones,all,3649,3649,= zone range 1-3649 in the region file (CMAP zone system),1
+PM,external zones,all,17,17,"= external zone range [3633, 3649]",1
+PM,disconnected zones,all,0,0,disconnected zones = 0 (each zone reaches and is reached by all zones),1
+PM,positive-demand OD pairs,sov,818885,,rows of demand_sov_PM.csv with volume > 0,
+PM,unreachable positive-demand OD pairs,sov,0,0,unreachable pairs = 0 on links allowing sov (intrazonal excluded),1
+PM,unreachable trips,sov,0,0,trips on unreachable pairs = 0,1
+PM,links allowing class,sov,55005,,allowed_use contains the class,
+PM,positive-demand OD pairs,hov2,342932,,rows of demand_hov2_PM.csv with volume > 0,
+PM,unreachable positive-demand OD pairs,hov2,0,0,unreachable pairs = 0 on links allowing hov2 (intrazonal excluded),1
+PM,unreachable trips,hov2,0,0,trips on unreachable pairs = 0,1
+PM,links allowing class,hov2,55005,,allowed_use contains the class,
+PM,positive-demand OD pairs,hov3,204014,,rows of demand_hov3_PM.csv with volume > 0,
+PM,unreachable positive-demand OD pairs,hov3,0,0,unreachable pairs = 0 on links allowing hov3 (intrazonal excluded),1
+PM,unreachable trips,hov3,0,0,trips on unreachable pairs = 0,1
+PM,links allowing class,hov3,55005,,allowed_use contains the class,
+PM,positive-demand OD pairs,apv,26944,,rows of demand_apv_PM.csv with volume > 0,
+PM,unreachable positive-demand OD pairs,apv,0,0,unreachable pairs = 0 on links allowing apv (intrazonal excluded),1
+PM,unreachable trips,apv,0,0,trips on unreachable pairs = 0,1
+PM,links allowing class,apv,55005,,allowed_use contains the class,
+PM,positive-demand OD pairs,btrk,1338781,,rows of demand_btrk_PM.csv with volume > 0,
+PM,unreachable positive-demand OD pairs,btrk,0,0,unreachable pairs = 0 on links allowing btrk (intrazonal excluded),1
+PM,unreachable trips,btrk,0,0,trips on unreachable pairs = 0,1
+PM,links allowing class,btrk,53487,,allowed_use contains the class,
+PM,positive-demand OD pairs,ltrk,718863,,rows of demand_ltrk_PM.csv with volume > 0,
+PM,unreachable positive-demand OD pairs,ltrk,0,0,unreachable pairs = 0 on links allowing ltrk (intrazonal excluded),1
+PM,unreachable trips,ltrk,0,0,trips on unreachable pairs = 0,1
+PM,links allowing class,ltrk,51492,,allowed_use contains the class,
+PM,positive-demand OD pairs,mtrk,664820,,rows of demand_mtrk_PM.csv with volume > 0,
+PM,unreachable positive-demand OD pairs,mtrk,0,0,unreachable pairs = 0 on links allowing mtrk (intrazonal excluded),1
+PM,unreachable trips,mtrk,0,0,trips on unreachable pairs = 0,1
+PM,links allowing class,mtrk,50617,,allowed_use contains the class,
+PM,positive-demand OD pairs,htrk,659707,,rows of demand_htrk_PM.csv with volume > 0,
+PM,unreachable positive-demand OD pairs,htrk,0,0,unreachable pairs = 0 on links allowing htrk (intrazonal excluded),1
+PM,unreachable trips,htrk,0,0,trips on unreachable pairs = 0,1
+PM,links allowing class,htrk,50274,,allowed_use contains the class,

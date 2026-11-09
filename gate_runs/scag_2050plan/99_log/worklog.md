@@ -1,0 +1,21 @@
+- 2026-11-09 16:55: raw: SCAG files listed in 00_raw/EXTERNAL.csv with sha256 (read in place)
+- 2026-11-09 16:56: publish: SCAG AM network and demand from data/output
+- 2026-11-09 16:57: L2: 0 unmatched road links; ramps set to vdf_type 7
+- 2026-11-09 17:03: L1: source 8,352,381, written 8,291,200, below threshold 61,182
+- 2026-11-09 17:08: L0: 4192 disconnected zones
+- 2026-11-09 17:08: L0: 0 disconnected zones
+- 2026-11-09 17:09: L0: 0 disconnected zones
+- 2026-11-09 17:09: L0: 2 disconnected zones
+- 2026-11-09 17:09: L0: 2 disconnected zones
+- 2026-11-09 17:09: status files for L3, L4, L5, L6
+- 2026-11-09 17:16: publish: SCAG AM network and demand from data/output
+- 2026-11-09 17:18: publish: SCAG AM network and demand from data/output
+- 2026-11-09 17:20: L3: road VMT 0.985, VHT 1.285 x SCAG; gap 13.404528 %
+- 2026-11-09 17:27: L0: 0 disconnected zones
+- 2026-11-09 17:28: L2: 0 unmatched road links; ramps set to vdf_type 7
+- 2026-11-09 17:28: status files for L4, L5, L6
+- 2026-11-09 17:44: publish: SCAG AM network and demand from data/output_gates
+- 2026-11-09 17:44: L0: 0 disconnected zones
+- 2026-11-09 17:45: L2: 0 unmatched road links; ramps set to vdf_type 7
+- 2026-11-09 17:45: L3: road VMT 0.985, VHT 1.285 x SCAG; gap 13.404528 %
+- 2026-11-09 17:45: status files for L4, L5, L6

@@ -1,0 +1,8 @@
+run_folder: data/output/runs/SCAG_VDF_REPLAY/AM/iter20
+engine: taplite4mpo-pre-release 0.4.0rc1 (PyPI), Windows, 10 processors
+classes: 8 (DA, SR2_HOV, SR3_HOV, LHDT, MHDT, HHDT, SR2_NONHOV, SR3_NONHOV)
+iterations: 20
+relative_gap_pct_at_end: 13.4
+to_converge: set number_of_iterations higher in settings.csv (e.g. 100) and rerun;
+  no other change needed
+ramp_vdf_type_in_this_run: 8 (now 7, see vdf > on_ramp)

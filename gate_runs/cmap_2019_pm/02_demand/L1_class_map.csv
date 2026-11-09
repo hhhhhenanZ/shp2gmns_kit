@@ -1,0 +1,9 @@
+class,name,cmap_rule,pce,vot,occ,demand_file
+sov,SOV + external auto,1.0 x mf417 + 1.0 x mf427 + 1.0 x mf437 + 0.155 x mf8,1,20.49,1.0,demand_sov_PM.csv
+hov2,HOV2,1.0 x mf447,1,20.25,2.0,demand_hov2_PM.csv
+hov3,HOV3+,1.0 x mf457,1,31.5,3.36,demand_hov3_PM.csv
+apv,air passenger,mf10 x 0.155 to airport zones + x 0.155 from airport zones to unflagged zones,1,30.0,1.0,demand_apv_PM.csv
+btrk,B-plate truck,0.176 x mf4,1,24.0,1.0,demand_btrk_PM.csv
+ltrk,light truck,0.176 x mf5,1,32.0,1.0,demand_ltrk_PM.csv
+mtrk,medium truck,0.176 x mf6,2,47.0,1.0,demand_mtrk_PM.csv
+htrk,heavy truck,0.103 x mf7 + 0.103 x mf9,3,52.0,1.0,demand_htrk_PM.csv

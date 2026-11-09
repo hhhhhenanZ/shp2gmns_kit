@@ -1,0 +1,17 @@
+- 2026-11-09 14:23: raw: agency files placed in 00_raw (large ones listed in 00_raw/EXTERNAL.csv)
+- 2026-11-09 14:30: convert: main_convert.py on _work/region.run.yaml, period PM
+- 2026-11-09 14:30: publish: 01_topology/{node,link,zone}.csv
+- 2026-11-09 14:41: demand: all classes written to 02_demand, threshold 0.0
+- 2026-11-09 14:44: L0: 0 disconnected zones; written L0_counts.csv
+- 2026-11-09 14:45: L1: source 3,527,729.4, written 3,527,729.4, residual 0.0 %
+- 2026-11-09 14:47: L0: 0 disconnected zones; written L0_counts.csv
+- 2026-11-09 15:04: demand: all classes written to 02_demand, threshold 0.01
+- 2026-11-09 15:04: L1: source 3,527,729.4, written 3,481,077.0, removed below threshold 46,652.6, unexplained -1e-05 %
+- 2026-11-09 15:06: L0: 0 disconnected zones; written L0_counts.csv
+- 2026-11-09 15:14: L2: 0 unmatched links; VHT at CMAP volume, road links: CMAP fd 0.732 x timau, TAPLite VDF 0.703 x timau
+- 2026-11-09 15:43: L3 build: 5 classes (car, btrk, ltrk, mtrk, htrk)
+- 2026-11-09 15:57: L3: road VMT 0.919, VHT 0.659, VHD 0.108 x CMAP; volume R2 0.93; gap 0.181167 %
+- 2026-11-09 16:22: status files for L4, L5, L6
+- 2026-11-09 16:25: status files for L4, L5, L6
+- 2026-11-09 16:27: status files for L4, L5, L6
+- 2026-11-09 16:49: status files for L4, L5, L6

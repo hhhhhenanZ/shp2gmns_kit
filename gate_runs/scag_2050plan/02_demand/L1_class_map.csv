@@ -1,0 +1,9 @@
+scag_core,agency_class,pce,vot,demand_file,source
+DA,DA,1.0,30.51,demand_DA_AM.csv,"SCAG email 2026-10-15, Q4: merge HOV with NONHOV, keep other classes separate"
+SR2_HOV,SR2,1.0,36.45,demand_SR2_HOV_AM.csv,"SCAG email 2026-10-15, Q4: merge HOV with NONHOV, keep other classes separate"
+SR2_NONHOV,SR2,1.0,36.45,demand_SR2_NONHOV_AM.csv,"SCAG email 2026-10-15, Q4: merge HOV with NONHOV, keep other classes separate"
+SR3_HOV,SR3,1.0,36.45,demand_SR3_HOV_AM.csv,"SCAG email 2026-10-15, Q4: merge HOV with NONHOV, keep other classes separate"
+SR3_NONHOV,SR3,1.0,36.45,demand_SR3_NONHOV_AM.csv,"SCAG email 2026-10-15, Q4: merge HOV with NONHOV, keep other classes separate"
+LHDT,LHDT,1.2,52.4,demand_LHDT_AM.csv,"SCAG email 2026-10-15, Q4: merge HOV with NONHOV, keep other classes separate"
+MHDT,MHDT,1.5,65.8,demand_MHDT_AM.csv,"SCAG email 2026-10-15, Q4: merge HOV with NONHOV, keep other classes separate"
+HHDT,HHDT,2.0,70.7,demand_HHDT_AM.csv,"SCAG email 2026-10-15, Q4: merge HOV with NONHOV, keep other classes separate"

@@ -17,7 +17,7 @@ TAPLite form
 ------------
 Only the no-capacity links get vdf_type / alpha / beta here. For VDF 1-5 and 8 they are
 left blank: CMAP's min-term and intersection delay are not kernel functions, and the
-TAPLite form is chosen in the replay step.
+TAPLite form is chosen in the replay step (taplite_vdf.py, region file > taplite_vdf).
 """
 
 from __future__ import annotations

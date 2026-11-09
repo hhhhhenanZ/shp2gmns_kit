@@ -1,0 +1,10 @@
+vdf_code,facility_type,links,vht_timau,vht_cmap_fd,vht_taplite_vdf,vht_ratio_cmap_fd,vht_ratio_taplite_vdf,median_time_ratio_cmap_fd,median_time_ratio_taplite_vdf
+1,arterial street,41861,685657,484078,461539,0.706,0.673,0.782,0.771
+2,freeway,1998,239959,184471,184261,0.769,0.768,0.905,0.934
+3,freeway-arterial ramp,1992,15912,12846,12344,0.807,0.776,1.0,0.999
+4,expressway,930,40963,36153,32055,0.883,0.783,0.987,0.918
+5,freeway-freeway ramp,664,13349,10913,9441,0.818,0.707,1.0,1.0
+6,zone centroid connector,7264,194695,194695,194695,1.0,1.0,1.0,1.0
+7,toll collection link,188,1254,1254,1254,1.0,1.0,1.0,1.0
+8,metered entrance ramp,108,1018,893,847,0.877,0.832,1.0,1.003
+road,road links (no connectors),47741,998112,730608,701740,0.732,0.703,0.799,0.791

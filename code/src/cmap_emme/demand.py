@@ -32,13 +32,13 @@ class EmxReader:
 
     def __call__(self, name: str) -> np.ndarray:
         if name not in self.cache:
-            raw = self.zip.read(f"{name}.emx")
+            raw = self.zip.read(f"{name}.emx")   # one member at a time
             self.sizes[name] = len(raw)
             arr = np.frombuffer(raw, dtype="<f4")
             if arr.size != self.n * self.n:
                 raise ValueError(f"{name}.emx has {arr.size} values, expected {self.n}^2")
-            self.cache[name] = arr.reshape(self.n, self.n).astype(np.float64)
-        return self.cache[name]
+            self.cache[name] = arr.reshape(self.n, self.n)   # stored as float32, as in the .emx
+        return self.cache[name].astype(np.float64)
 
 
 def flags(cfg: dict, n: int) -> np.ndarray:

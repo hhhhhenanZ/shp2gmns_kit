@@ -1,0 +1,2 @@
+gate,status,reason,requested_from,requested_on
+L5,BLOCKED (question),no 2019 speed data in hand; a 2023 INRIX S3/QVDF fit exists for the City of Chicago network (6_final_data2023/qvdf_chicago1104_strict_dry); asked whether it may be used with 2019 and 2023 scopes stated separately,Dr. Zhou (question on use of 2023 fit),2026-11-09

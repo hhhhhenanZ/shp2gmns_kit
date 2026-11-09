@@ -206,8 +206,10 @@ access:
 demand:
   emmemat_zip: ../c25q4_100/emmemat_c25q4_100.zip
   zones: 3649
-  # Cells at or below this are not written (fast first version; no rescaling). Kept share per
-  # mode goes to parameters/demand_summary.csv and the report. Trucks lose up to ~29 %.
+  # OD cells <= min_volume (vehicles per 2 h) are not written and not rescaled.
+  # 0.01 keeps the trip files small enough for TAPLite on an 8 GB laptop and shortens the run;
+  # it drops 46,653 of 3,527,730 PM trips (1.3 %; 28-29 % of light and medium trucks).
+  # For the full dataset set 0 and rerun (trucks then fill ~13 M OD cells per class, 1.3 GB).
   min_volume: 0.01
   periods:
     PM:
@@ -260,3 +262,96 @@ checks:
   length_tolerance: 0.05       # |median LENGTH / straight-line distance - 1|
   vdf_reproduced_codes: [5, 6, 7, 8]
   vdf_reproduced_median_error: 0.01
+
+# ---- VDF used by TAPLite (replay step: code/src/cmap_emme/taplite_vdf.py, gate L2) -----
+# CMAP's fd1-fd8 above are not TAPLite functions yet (min-term in fd2/fd4; signal delay in
+# fd1/fd3 needs @cycle and @gc, not exported). For now every link with a capacity gets one
+# BPR, so the network can be assigned. CMAP's own values stay in the cmap_* columns of
+# 03_supply/link.csv; 03_supply/L2_replay.csv shows what the BPR changes, by facility type,
+# at CMAP's own volume. To go back to CMAP's functions set form: cmap once TAPLite has them.
+taplite_vdf:
+  form: bpr              # bpr (now) | cmap (fd1-fd8, after they are added to TAPLite)
+  vdf_type: 0            # TAPLite BPR: t = t0 [1 + alpha (v / (capacity x lanes x hours))^beta]
+  alpha: 0.15
+  beta: 4
+  plf: 1.0
+  fixed_time_codes: [6, 7]   # connectors and toll links: t = free-flow time (alpha 0), as in CMAP
+  # Bus preload: not included for now (road network only). CMAP adds it to v in fd1-fd5
+  # (v = volau + el2, el2 = @busveq). It is not in the exported files (VOLAD = 0); it is computed
+  # from the transit network: @busveq = sum over bus lines on the link of 60 / headway x 2 x 3
+  # (PM tod_mult 2, 3 veq per bus), lines and headways from bus.itinerary_4 in
+  # emmenet_transit_tod_c25q4_100.zip [C calculate_busveq.py].
+  bus_preload: none
+
+# ---- TAPLite assignment (gate L3: code/gates/gate_L3.py) ------------------------------
+# Declared limit: the run must fit in 8 GB of memory (the laptop it is run on). TAPLite keeps
+# about 0.8 GB per class (five dense zone x zone OD arrays and one shortest-path tree), so the
+# 8 CMAP classes need about 8.5 GB and stop on an 8 GB machine (measured 2026-11-05).
+# For now the four car classes are assigned as one class "car". With no tolls in the run, the
+# same allowed links and pce 1, they choose the same routes, so link volumes, times, VMT and VHT
+# do not change; volumes per car class are not produced. With >= 12 GB set merge_classes: {}.
+assignment:
+  engine: ../08_ftt_chicago/engine        # TAPLite.cpp / TAPLite_ftt.exe, relative to CMAP_model
+  memory_limit_gb: 8
+  merge_classes:
+    car: [sov, hov2, hov3, apv]
+  iterations: 10
+  processors: 2
+  first_through_node_id: 5001             # no paths through zone centroids (ids 1-3649)
+  tolls: not used (TAPLite multi-class runs do not read toll; CMAP adds @toll as cost)
+
+# ---- gate run folder (code/run_gates.py) ----------------------------------------
+# python code/run_gates.py --region region.cmap.yaml --run ../cmap_2019_pm
+gates:
+  period: PM
+  # Agency files for 00_raw. copy: false = too large to copy; listed in 00_raw/EXTERNAL.csv
+  # with path and sha256 and read in place.
+  raw:
+    network_shapefile:
+      file: ../c25q4_100/highwayshp_pmpk_c25q4_100.zip
+      unpack_to: highwayshp_pmpk
+      source: CMAP Data Hub, c25q4 data package [G]
+    network_emme:
+      file: ../c25q4_100/emmenet_highway_c25q4_100.zip
+      unpack_to: emmenet_highway
+      source: CMAP Data Hub, c25q4 data package [G]
+    demand_matrices:
+      file: ../c25q4_100/emmemat_c25q4_100.zip
+      copy: false
+      source: CMAP Data Hub, c25q4 data package [G]
+    user_guide:
+      file: ../c25q4_100/data_user_guide.html
+      source: CMAP Data Hub, c25q4 data package [G]
+  # input > key > period, relative to _work/unpacked/
+  inputs:
+    links_shapefile: highwayshp_pmpk/emme_links.shp
+    nodes_shapefile: highwayshp_pmpk/emme_nodes.shp
+    turns_dbf: highwayshp_pmpk/emme_turns.dbf
+    extra_attributes: emmenet_highway/attribs_p7.txt
+    emme_network: emmenet_highway/network_p7.txt
+  external_zones: [3633, 3649]    # CMAP external zones [A]; see CMAP_network_conversion_reference.md
+  # Gates that cannot be produced with the files in hand: one-line L file each (gate_status.py).
+  # requested_from / requested_on stay "not yet" until a request is sent.
+  not_produced:
+    L4:
+      folder: 05_counts
+      file: L4_fit.csv
+      status: BLOCKED (question)
+      reason: "2023 IDOT AADT is in hand and already matched to the City of Chicago network: 26,312 links (count year >= 2022), converted to 4-6 pm directional volume as AADT x w x h x D with IDOT factors (Dataset/04_aadt/idot_aadt_pipeline, aadt_pm2h_by_link.csv; method AADT_to_PM_volume_method.md); used for the 2023 city model (R5a, VMT ratio 1.04). Not used here: this run is 2019 on CMAP links. Asked whether the 2023 counts may be used here"
+      requested_from: Dr. Zhou (question on use of 2023 AADT)
+      requested_on: 2026-11-09
+    L5:
+      folder: 06_congestion
+      file: L5_speed_index.csv
+      status: BLOCKED (question)
+      reason: no 2019 speed data in hand; a 2023 INRIX S3/QVDF fit exists for the City of Chicago network (6_final_data2023/qvdf_chicago1104_strict_dry); asked whether it may be used with 2019 and 2023 scopes stated separately
+      requested_from: Dr. Zhou (question on use of 2023 fit)
+      requested_on: 2026-11-09
+    L6:
+      folder: 07_transit
+      file: L6_station_volume.csv
+      status: BLOCKED
+      reason: transit network not considered for now; highway network and highway demand only
+      requested_from: ""
+      requested_on: ""
+

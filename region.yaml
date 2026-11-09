@@ -151,7 +151,10 @@ vdf:
     facility_types: [82, 84]              # arterial to freeway, arterial to HOV [UG]
     # 8 = the report's on-ramp function as coded in TAPLite.cpp.
     # 7 = Table 16-2 "All Others". See "On-ramp function" in CONVERSION_REPORT.md first.
-    vdf_type: 8
+    # Set to 7 on 2026-11-09. At SCAG's own loaded AM volume (fixed-volume replay), type 8
+    # gives a median ramp delay of 39 min against SCAG's 0.0005 min; type 7 reproduces SCAG's
+    # ramp delay (mean error 0.0014 min). Gate L2 writes this replay: 03_supply/L2_replay.csv.
+    vdf_type: 7
     source: "[VR] p.160 freeway on-ramp function; [SA on_ramp_parameters.png]; [TC] vdf_type 8"
   connectors:
     facility_types: [100, 200]
@@ -214,6 +217,14 @@ zones:
     seaport:  [4162, 4192]
   tier1_zone_field: SEQ
   tier1_connector_facility_type: 100
+  # Stage 4b: a zone node with road links in and out, or with a link to another zone's
+  # centroid, is split off the road network: its links move to a new station node
+  # (id = station_id_base + zone node id) and one zero-delay connector pair joins the two.
+  # TAPLite does not route through zone centroids, so without this the 40 external stations
+  # cut their roads and zones 4140 (I-8) and 4181 (seaport) are isolated (gate L0).
+  # code/src/scag_transcad/zone_split.py; list in network/zone_split.csv.
+  split_road_zone_nodes: true
+  station_id_base: 200000
   external_zones_sheet: external zone Ids
   resolve:                                # how centroids are located: code/src/scag_transcad/zones.py
     period: AM
@@ -244,3 +255,76 @@ assignment:
   config_name: SCAG_VDF_REPLAY            # runs/<config_name>/<period>/
   iterations: [1, 20]                     # one run folder per value in main_replay.py
   processors: 10
+
+# ---- gate run folder (code/run_gates.py) -------------------------------------------
+# python code/run_gates.py --region region.yaml --data-root <SCAG kit with data/> --run <SCAG>/scag_2050plan
+# Paths in this file are relative to --data-root (the folder that holds data/input and data/output).
+gates:
+  period: AM
+  run_name: scag_2050plan
+  # Network and demand in the run folder come from this conversion: main_convert.py on this region
+  # file with --output-root data/output_gates (zone nodes split in stage 4b). data/output keeps the
+  # 2026-09-26 conversion that the 09-26 assignment used. L0 and L1 check against the raw files.
+  conversion: data/output_gates
+  # Demand: the 2026-09-26 conversion (data/output). The zone split does not touch zone ids, so
+  # the trip tables are the same; L1 checks them against AM_OD.mtx.csv.
+  demand_from: data/output
+  # Agency files, read in place and listed in 00_raw/EXTERNAL.csv with sha256 (too large to copy).
+  raw:
+    network_shp:  {file: data/input/network/scag_network_Full_loaded_shp/scag_network_Full_loaded.shp, copy: false}
+    network_dbf:  {file: data/input/network/scag_network_Full_loaded_shp/scag_network_Full_loaded.dbf, copy: false}
+    hrcapac:      {file: data/input/network/scag_link_hrcapac.csv, copy: false}
+    dictionary:   {file: data/input/network/Data_Dictionary_loaded_network.xlsx, copy: false}
+    od_am:        {file: data/input/demand/OD_veh_trip_csv/AM_OD.mtx.csv, copy: false}
+    od_am_dcc:    {file: data/input/demand/OD_veh_trip_csv/AM_OD.mtx.DCC, copy: false}
+    taz_t1_dbf:   {file: data/input/taz/T1TAZ_24RTP.dbf, copy: false}
+    taz_corr:     {file: "data/input/taz/TAZ_correspondence(in).csv", copy: false}
+    external_ids: {file: data/input/taz/External Zone IDs.xlsx, copy: false}
+  # OD file AM_OD.mtx.csv: no header; origin, destination (Tier-1 TAZ ids), then the 8 cores
+  # in the order of AM_OD.mtx.DCC.
+  od_cores: [DA, SR2_HOV, SR3_HOV, LHDT, MHDT, HHDT, SR2_NONHOV, SR3_NONHOV]
+  # SCAG, 2026-10-15 (Q4): merge HOV with NONHOV, keep the other classes separate.
+  agency_classes:
+    DA: [DA]
+    SR2: [SR2_HOV, SR2_NONHOV]
+    SR3: [SR3_HOV, SR3_NONHOV]
+    LHDT: [LHDT]
+    MHDT: [MHDT]
+    HHDT: [HHDT]
+  # Loaded flow fields in link.csv, per direction, in mode order (shapefile names cut to 10 characters)
+  flow_fields: {DA: FLOW_DA, SR2_HOV: FLOW_SR, SR3_HOV: FLOW_S1, LHDT: FLOW_LI, MHDT: FLOW_ME, HHDT: FLOW_HE, SR2_NONHOV: FLOW_S2, SR3_NONHOV: FLOW_S3}
+  time_field: TIME_AM
+  # Gate L3 reads a finished TAPLite run. The 2026-09-26 AM run stopped at 20 iterations with a
+  # relative gap of 13.4 %: to converge, set number_of_iterations higher in settings.csv
+  # (e.g. 100) and rerun. That run used vdf_type 8 on the ramps (before the L2 fix) and 8 classes.
+  assignment:
+    run_folder: data/output/runs/SCAG_VDF_REPLAY/AM/iter20
+    engine: taplite4mpo-pre-release 0.4.0rc1 (PyPI), Windows, 10 processors
+    classes: 8 (DA, SR2_HOV, SR3_HOV, LHDT, MHDT, HHDT, SR2_NONHOV, SR3_NONHOV)
+    iterations: 20
+    relative_gap_pct_at_end: 13.4
+    to_converge: set number_of_iterations higher in settings.csv (e.g. 100) and rerun; no other change needed
+    ramp_vdf_type_in_this_run: 8 (now 7, see vdf > on_ramp)
+  not_produced:
+    L4:
+      folder: 05_counts
+      file: L4_fit.csv
+      status: FAIL (comparison pending)
+      reason: Screenline counts delivered by SCAG on 2026-10-15 (Q3, shared folder; see SCAG_data_delivery_2026-10-15.md); the comparison (assigned vs count by screenline and direction, R2 and slope by facility type) is not produced yet and is left for the next person to complete
+      requested_from: SCAG (Hui Deng)
+      requested_on: delivered 2026-10-15
+    L5:
+      folder: 06_congestion
+      file: L5_speed_index.csv
+      status: BLOCKED
+      reason: No independent speed data declared yet; congestion and speed analysis were not part of the SCAG replication task
+      requested_from: ""
+      requested_on: ""
+    L6:
+      folder: 07_transit
+      file: L6_station_volume.csv
+      status: BLOCKED
+      reason: Transit network not considered for now; highway network and demand only
+      requested_from: ""
+      requested_on: ""
+

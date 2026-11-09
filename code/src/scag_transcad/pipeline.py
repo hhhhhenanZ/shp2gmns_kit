@@ -9,6 +9,7 @@ Stages
 2  zones     Tier-1 zone centroids from the TAZ polygons and SCAG's loaded flows
 3  rules     VDF, allowed_use, period capacity factor, and their checks
 4  write     network/<P>/link.csv, node.csv
+4b split     zone nodes on the road network -> network/zone_split.csv (zones > split_road_zone_nodes)
 5  demand    demand/<P>/<mode_type>_<P>.csv
 6  stage     runs/<config>/<P>/: network + demand + settings.csv + mode_type.csv
 7  report    FIELD_PROVENANCE.csv, CONVERSION_REPORT.md, CONVERT_MANIFEST.json
@@ -364,6 +365,19 @@ def run(region: ScagRegion, periods: list[str], *, skip_demand: bool = False,
         "name": pd.Series(ctx["road_name"][out_rows]).fillna("").to_numpy(),
     }), network_dir / "link_excluded.csv", bom=options["csv_bom"])
     manifest["stages"]["write"] = written
+
+    # ---- 4b -----------------------------------------------------------------
+    # Zone nodes that sit on the road network are split off it (zone_split.py): TAPLite does
+    # not route through zone centroids, so such a node cuts the road (zone 4140 on I-8) or
+    # isolates a zone whose connector leads to another centroid (seaport 4181 via 4179).
+    if region.raw.get("zones", {}).get("split_road_zone_nodes", False):
+        banner("STAGE 4b zones: split zone nodes that sit on the road network")
+        from .zone_split import split_network_folder
+        base = int(region.raw["zones"].get("station_id_base", 200000))
+        split_log = split_network_folder(network_dir, periods, base, bom=options["csv_bom"])
+        for period in periods:
+            written[period]["zone_nodes_split"] = int(len(split_log)) if split_log is not None else 0
+        manifest["stages"]["zone_split"] = {"zones": int(len(split_log)), "station_id_base": base}
     manifest["stages"]["link_geometry_file"] = str(geometry_file) if geometry_file else None
     manifest["stages"]["write_elapsed_sec"] = time.perf_counter() - stage
 

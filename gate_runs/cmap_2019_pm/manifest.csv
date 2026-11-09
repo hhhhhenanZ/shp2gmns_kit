@@ -1,0 +1,49 @@
+path,bytes,sha256,source,script,date
+00_raw/EXTERNAL.csv,233,47f341cf422c19b083975854e298dd3e965c155339cadfc5fc8a059889cdd4b6,"agency file, original name",,2026-11-09 14:23
+00_raw/data_user_guide.html,32707,8d39075062a78cd90e8eaaa04d083f7c67aba6f0dc523ab2ba2af843c92771ff,"agency file, original name",,2026-10-21 16:12
+00_raw/emmenet_highway_c25q4_100.zip,19733328,93358f7558dcaf677ab16e74d50f6b6e1a4c1819e2663a0cf47acb7160f125ea,"agency file, original name",,2026-10-21 16:12
+00_raw/highwayshp_pmpk_c25q4_100.zip,9322780,7aff329dd60cdee8bbb22f6f82f281134b80b309711b93d2126c5b674fe7dcbb,"agency file, original name",,2026-10-21 16:12
+01_topology/L0_counts.csv,3085,b052b09a2f53b70b4a5d58a12ebfab5e8072efa64d25fc83abfa798920c01cc3,01_topology/node.csv link.csv zone.csv; 02_demand; 00_raw shapefile zip,code/gates/gate_L0.py @ 3db1d02+uncommitted,2026-11-09 15:06
+01_topology/link.csv,11401901,6ecf15a0f2e50478f67ee5034b695426092baf7673e7f3925fd4d94a4100df02,_work/convert (main_convert.py from 00_raw),code/gates/prepare.py @ 3db1d02+uncommitted,2026-11-09 14:30
+01_topology/node.csv,832802,37a1462233264659bebbe9ea388c3177e380a605789d100ab56e399b284faf78,_work/convert (main_convert.py from 00_raw),code/gates/prepare.py @ 3db1d02+uncommitted,2026-11-09 14:30
+01_topology/zone.csv,131943,4b3947f8ff11fb0efc2254ec7cdf00949cf665e5fa8dd01a326fbbf19c36a711,_work/convert (main_convert.py from 00_raw),code/gates/prepare.py @ 3db1d02+uncommitted,2026-11-09 14:30
+02_demand/L1_class_map.csv,638,6a3cf7572987a306e9b548da5e97898c96ec028192f3e7efa5397237e24e1be8,00_raw demand matrices (rule in region file); 02_demand files,code/gates/gate_L1.py @ 3db1d02+uncommitted,2026-11-09 15:04
+02_demand/L1_conservation.csv,1234,f614b38c904e05ac31ba72ead3a66e901b8dde599a9e1abdc23b9c23f353f17a,00_raw demand matrices (rule in region file); 02_demand files,code/gates/gate_L1.py @ 3db1d02+uncommitted,2026-11-09 15:04
+02_demand/demand_apv_PM.csv,569531,8be3954595dc594ce7899e6c08da4b02869258bd462f1c9bc73978b3c3dc7a50,00_raw demand matrices: mf10 x 0.155 to airport zones + x 0.155 from airport zones to unflagged zones; threshold 0.01,code/gates/prepare.py @ 3db1d02+uncommitted,2026-11-09 15:03
+02_demand/demand_btrk_PM.csv,29095837,4a3654fe1b028e6399bc3d3a5b16e90ee4669cdf5ffafa64212e02e0e6cfa7e3,00_raw demand matrices: 0.176 x mf4; threshold 0.01,code/gates/prepare.py @ 3db1d02+uncommitted,2026-11-09 15:04
+02_demand/demand_hov2_PM.csv,4346097,bcb8fe865c7f233d0a05fd3ddb5040998531990bba3967d7566d2d1fc2524e24,00_raw demand matrices: 1.0 x mf447; threshold 0.01,code/gates/prepare.py @ 3db1d02+uncommitted,2026-11-09 15:03
+02_demand/demand_hov3_PM.csv,4285130,9138ce9af44d4ea1a22e7b2ab5eb9b232b2d2db94c1f7152cc30b3ce6c57d255,00_raw demand matrices: 1.0 x mf457; threshold 0.01,code/gates/prepare.py @ 3db1d02+uncommitted,2026-11-09 15:03
+02_demand/demand_htrk_PM.csv,14657177,0caecac89b83123c5552494152018fd68fddd11cfd77b6f55a7d206cd1e3c6c2,00_raw demand matrices: 0.103 x mf7 + 0.103 x mf9; threshold 0.01,code/gates/prepare.py @ 3db1d02+uncommitted,2026-11-09 15:04
+02_demand/demand_ltrk_PM.csv,15869725,588028995c216b8676cda056f69307a6d6433f5165a45dd9cb6f94ceb5c61157,00_raw demand matrices: 0.176 x mf5; threshold 0.01,code/gates/prepare.py @ 3db1d02+uncommitted,2026-11-09 15:04
+02_demand/demand_mtrk_PM.csv,14675775,b8e187f218fb65238c9362dbbc2090f77abf98c1e200fa4c585bd00ca7fd1d92,00_raw demand matrices: 0.176 x mf6; threshold 0.01,code/gates/prepare.py @ 3db1d02+uncommitted,2026-11-09 15:04
+02_demand/demand_sov_PM.csv,16362069,6ca99e42dcd4632a7abedc0aa039aed7f9bba30ee9aee4ddd1fffeeffcdde692,00_raw demand matrices: 1.0 x mf417 + 1.0 x mf427 + 1.0 x mf437 + 0.155 x mf8; threshold 0.01,code/gates/prepare.py @ 3db1d02+uncommitted,2026-11-09 15:03
+02_demand/mode_type.csv,443,1aabaf4d014abed118e1b90be82ac773d6db63f98ded8a59656ab9c73e67ae49,region file demand > mode_types; SOV VOT weighted [C],code/gates/prepare.py @ 3db1d02+uncommitted,2026-11-09 15:04
+03_supply/L2_replay.csv,756,5f0d9842412fe54561967a90fe2f2fbe2dfb01bbc4ee08db96472bddbc63b1e1,01_topology/link.csv; region file vdf and taplite_vdf,code/gates/gate_L2.py @ 3db1d02+uncommitted,2026-11-09 15:14
+03_supply/L2_unmatched.csv,56,6fc02fe419f62ac21ae3bab29708815ba45829db5b345c66e7dc3b660260c586,01_topology/link.csv; region file vdf and taplite_vdf,code/gates/gate_L2.py @ 3db1d02+uncommitted,2026-11-09 15:14
+03_supply/capacity_lookup.csv,2005,d20c05a08d7c548cedbf769575f729e6b81e7adb3c491b6107759419d7482f3e,01_topology/link.csv; region file vdf and taplite_vdf,code/gates/gate_L2.py @ 3db1d02+uncommitted,2026-11-09 15:14
+03_supply/link.csv,12966733,ba8d558cde27d4eb599a47eaca31cfe313e166062c8eef27b13d0858a5006f26,01_topology/link.csv; region file vdf and taplite_vdf,code/gates/gate_L2.py @ 3db1d02+uncommitted,2026-11-09 15:14
+03_supply/link_vdf.csv,4580053,c0a574813faf86f025756d589ae8b0eb262112f987627c6b850f6ededcdbfdb0,01_topology/link.csv; region file vdf and taplite_vdf,code/gates/gate_L2.py @ 3db1d02+uncommitted,2026-11-09 15:14
+04_assignment/L3_vmt_vht.csv,1207,6e6a616c45114f2d18e1d618b7a528d6ad5d9960d09bb84bea2e1b4f9b57e33d,"04_assignment/link_performance.csv, link.csv",code/gates/gate_L3.py @ 3db1d02+uncommitted,2026-11-09 15:57
+04_assignment/demand_btrk.csv,29095837,4a3654fe1b028e6399bc3d3a5b16e90ee4669cdf5ffafa64212e02e0e6cfa7e3,01_topology/node.csv; 03_supply/link.csv; 02_demand; region file assignment,code/gates/gate_L3.py @ 3db1d02+uncommitted,2026-11-09 15:42
+04_assignment/demand_car.csv,20454281,c74896c6452e79df8b54c4e98b18ab7ef4c58d399f628b09fe1ef297e0474f13,01_topology/node.csv; 03_supply/link.csv; 02_demand; region file assignment,code/gates/gate_L3.py @ 3db1d02+uncommitted,2026-11-09 15:42
+04_assignment/demand_htrk.csv,14657177,0caecac89b83123c5552494152018fd68fddd11cfd77b6f55a7d206cd1e3c6c2,01_topology/node.csv; 03_supply/link.csv; 02_demand; region file assignment,code/gates/gate_L3.py @ 3db1d02+uncommitted,2026-11-09 15:42
+04_assignment/demand_ltrk.csv,15869725,588028995c216b8676cda056f69307a6d6433f5165a45dd9cb6f94ceb5c61157,01_topology/node.csv; 03_supply/link.csv; 02_demand; region file assignment,code/gates/gate_L3.py @ 3db1d02+uncommitted,2026-11-09 15:42
+04_assignment/demand_mtrk.csv,14675775,b8e187f218fb65238c9362dbbc2090f77abf98c1e200fa4c585bd00ca7fd1d92,01_topology/node.csv; 03_supply/link.csv; 02_demand; region file assignment,code/gates/gate_L3.py @ 3db1d02+uncommitted,2026-11-09 15:42
+04_assignment/link.csv,13186753,3c4a15d53875391aba36704fb07750c3de3b0efe4525c6fe9286e290b24b8de1,01_topology/node.csv; 03_supply/link.csv; 02_demand; region file assignment,code/gates/gate_L3.py @ 3db1d02+uncommitted,2026-11-09 15:43
+04_assignment/link_performance.csv,38233380,b4c753d3a6ec0a93fb6d0630b5f7d005ac9c59e5f25c32a69468f9ee55328d74,04_assignment inputs and settings.csv,"TAPLite 08_ftt_chicago/engine TAPLite.cpp md5 b8fd5c52, Linux build, 2 cores @ 3db1d02+uncommitted",2026-11-09 15:57
+04_assignment/mode_type.csv,305,cf53e2aa1c92e1a96a104168a2336c909569f58534bda1658c737d7c6b77f35c,01_topology/node.csv; 03_supply/link.csv; 02_demand; region file assignment,code/gates/gate_L3.py @ 3db1d02+uncommitted,2026-11-09 15:42
+04_assignment/node.csv,832802,37a1462233264659bebbe9ea388c3177e380a605789d100ab56e399b284faf78,01_topology/node.csv; 03_supply/link.csv; 02_demand; region file assignment,code/gates/gate_L3.py @ 3db1d02+uncommitted,2026-11-09 15:42
+04_assignment/settings.csv,237,59a9d6f39ee0211dc3eeb834cad771187d9f9323b8d5c9d0a9b217616bd4b30b,01_topology/node.csv; 03_supply/link.csv; 02_demand; region file assignment,code/gates/gate_L3.py @ 3db1d02+uncommitted,2026-11-09 15:43
+04_assignment/settings.yaml,578,5a8c05ef16ff3d8c501e8f729ce0fbaafc8bca536d0f9c5144329dcda8d6d539,01_topology/node.csv; 03_supply/link.csv; 02_demand; region file assignment,code/gates/gate_L3.py @ 3db1d02+uncommitted,2026-11-09 15:43
+04_assignment/summary_log_file.txt,2156,eb9232e76626fff51daafc4cf3e281428becfd97bc57e5f687447dd88a0d0258,04_assignment inputs and settings.csv,"TAPLite 08_ftt_chicago/engine TAPLite.cpp md5 b8fd5c52, Linux build, 2 cores @ 3db1d02+uncommitted",2026-11-09 15:56
+05_counts/L4_fit.csv,555,58e0f27b874cceb3cbbef8407a1738489f6ca532a956befd340659837ec6eec5,region file gates > not_produced,code/gates/gate_status.py @ 3db1d02+uncommitted,2026-11-09 16:49
+06_congestion/L5_speed_index.csv,332,92aea2533aab21c8c08a79d229d619ef046139863b492819d0ee9afe39fede45,region file gates > not_produced,code/gates/gate_status.py @ 3db1d02+uncommitted,2026-11-09 16:49
+07_transit/L6_station_volume.csv,140,cfa707af548d3d3e0821e5083103bfa0bbcb039f51f28ac063353319c70a8723,region file gates > not_produced,code/gates/gate_status.py @ 3db1d02+uncommitted,2026-11-09 16:49
+99_log/produced.csv,4750,041bf21969d163f3cf6fc9d36ea6f32a412d659ef6b6d47737127c2fc8a46bb8,log / text,,2026-11-09 16:49
+99_log/rerun.md,745,85f60ed18e3d564c0f91d5bafe70bc5db5201c1e3eaaa63f23dcaed7666d4845,log / text,,2026-11-09 16:09
+99_log/run_prepare.txt,374,a759ea1dab3fbcb59614caf1a12b1e3d27cf03ac7bd5d76842b88e3c92eed13b,log / text,,2026-11-09 14:25
+99_log/taplite_engine.txt,167,ae07408d5f459c541703d1e9e4d20d99b940a0940c499e383d2db5ec231edf05,log / text,,2026-11-09 15:56
+99_log/taplite_run.log,3477,bbbf795a173c128634c8c61220cef655ea0b7c2d7f2b0ae8d7c90cb68e7e5aff,log / text,,2026-11-09 15:56
+99_log/worklog.md,1284,b6250a4bb885af9632aa962ce40b084727819139c9754d65a874c04bfff0fc60,log / text,,2026-11-09 16:49
+README.md,4553,1f13b0b823a574b610b66c4b2492da9c83005b07af0d39b97fb98161abfa35bd,log / text,,2026-11-09 16:49
+(external) ../c25q4_100/emmemat_c25q4_100.zip,1845096976,79cc0c9f8f631895691f5031d7e80c353ab47fee0cfff03cfc705ce24bc28f2b,"agency file, too large to copy",,

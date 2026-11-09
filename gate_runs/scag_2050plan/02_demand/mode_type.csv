@@ -1,0 +1,9 @@
+mode_type_id,mode_type,name,vot,pce,occ,demand_file
+1,DA,DA,30.51,1.0,1.0,demand_DA_AM.csv
+2,SR2_HOV,SR2 HOV,36.45,1.0,2.0,demand_SR2_HOV_AM.csv
+3,SR3_HOV,SR3 HOV,36.45,1.0,3.0,demand_SR3_HOV_AM.csv
+4,LHDT,LHDT,52.4,1.2,1.0,demand_LHDT_AM.csv
+5,MHDT,MHDT,65.8,1.5,1.0,demand_MHDT_AM.csv
+6,HHDT,HHDT,70.7,2.0,1.0,demand_HHDT_AM.csv
+7,SR2_NONHOV,SR2 NONHOV,36.45,1.0,2.0,demand_SR2_NONHOV_AM.csv
+8,SR3_NONHOV,SR3 NONHOV,36.45,1.0,3.0,demand_SR3_NONHOV_AM.csv
