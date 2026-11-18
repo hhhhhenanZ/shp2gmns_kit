@@ -1,6 +1,7 @@
 """CMAP conversion stages, driven by ``code/main_convert.py``.
 
     python code/main_convert.py --region region.cmap.yaml --periods PM
+    python code/main_convert.py --region region.cmap.yaml --demand-only     # OD of every demand period
 
 Stages: 1 read, 2 join, 3 nodes, 4 links, 5 rules, 6 write, 7 checks, 8 report.
 Output under ``output > root`` (data/output/cmap):
@@ -148,16 +149,52 @@ def convert_period(region: CmapRegion, period: str, skip_demand: bool = False) -
     return 1 if gates.failed else 0
 
 
+def demand_only_period(region: CmapRegion, period: str) -> int:
+    """OD tables of one period, without the network (CMAP exports shapefiles for AM and PM only)."""
+    out = region.output_root
+    bom = bool(region.raw["output"].get("csv_bom", True))
+    t0 = time.perf_counter()
+    banner(f"CMAP {period}: demand only")
+    dem = demand.write(region.raw["demand"], region, period, out, bom)
+    write_csv(dem["summary"], out / "parameters" / "demand_by_period" / f"demand_summary_{period}.csv", bom)
+    write_csv(dem["mode_types"], out / "parameters" / "demand_by_period" / f"mode_type_{period}.csv", bom)
+    for _, r in dem["summary"].iterrows():
+        print(f"  {r.mode_type:<5} {r.total_vehicles:>12,.0f} veh  written {r.cells_written:>10,} cells"
+              f"  kept {r.share_kept:.2%}")
+    check = {"period": period, "matrices": dem["sizes"], "floor": dem["floor"],
+             "sov_demand_model_total": round(dem["sov_demand_model_total"], 1),
+             "expected_sov_demand_model_total": dem["expected_sov_demand_model_total"],
+             "seconds": round(time.perf_counter() - t0, 1), "finished_utc": report.now()}
+    (out / "parameters" / "demand_by_period" / f"demand_check_{period}.json").write_text(
+        json.dumps(check, indent=2), encoding="utf-8")
+    ok = abs(check["sov_demand_model_total"] - check["expected_sov_demand_model_total"]) < 1.0
+    print(f"  {'PASS' if ok else 'FAIL'}  D4 SOV demand-model total {check['sov_demand_model_total']:,.1f}"
+          f" = trip_roster {check['expected_sov_demand_model_total']:,.0f}   ({check['seconds']} s)")
+    return 0 if ok else 1
+
+
 def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser(description="CMAP (Emme) highway network -> GMNS")
     parser.add_argument("--region", type=Path)
     parser.add_argument("--periods", nargs="*")
     parser.add_argument("--output-root", type=Path)
     parser.add_argument("--skip-demand", action="store_true", help="network only")
+    parser.add_argument("--demand-only", action="store_true",
+                        help="OD tables only, for the periods in demand > periods")
     args, _ = parser.parse_known_args(argv)
     region = CmapRegion.load(args.region or region_file_from_argv(argv, KIT_ROOT / "region.cmap.yaml"))
     if args.output_root:
         region.raw["output"]["root"] = str(args.output_root.resolve())
+    if args.demand_only:
+        known = region.raw["demand"]["periods"]
+        periods = args.periods or [p for p in known if p != "PM"]
+        unknown = sorted(set(periods) - set(known))
+        if unknown:
+            raise SystemExit(f"ERROR: periods {unknown} are not in demand > periods")
+        status = 0
+        for period in periods:   # one at a time
+            status |= demand_only_period(region, period)
+        return status
     periods = args.periods or list(region.periods)
     unknown = sorted(set(periods) - set(region.periods))
     if unknown:

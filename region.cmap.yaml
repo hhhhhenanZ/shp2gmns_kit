@@ -226,6 +226,115 @@ demand:
       airport: {matrix: mf10, to_airport_factor: 0.155, from_airport_factor: 0.155}
       # check D4: mf417 + mf427 + mf437 = trip_roster PM2 mode 1 (measured 2026-10-27)
       expected_sov_demand_model_total: 2351437
+    # ---- the 8 CMAP periods, OD only (main_convert.py --demand-only) ----------------------
+    # Period y: autos mf41y-mf45y [C ttables.mac r81-r85]; factors tod_factors.p<y> [C] = [G] TOD y column,
+    # checked 2026-11-17 for p1-p8 (order r19 auto POE, r20 r21 airport, r22-r24 b/l/m trucks, r25 r26 heavy and truck POE).
+    # Codes EA ... PM3 = trip_roster timeperiod [C setup_transit_asmt_3_TOD_transit_demand.py]. PM2 = PM above.
+    # expected_sov_demand_model_total = trip_roster mode 1 in that time period (measured 2026-11-17).
+    EA:   # period 1, 8 pm-6 am
+      tables:
+        sov:  [[mf411, 1.0], [mf421, 1.0], [mf431, 1.0], [mf8, 0.163]]
+        hov2: [[mf441, 1.0]]
+        hov3: [[mf451, 1.0]]
+        apv:  airport
+        btrk: [[mf4, 0.23]]
+        ltrk: [[mf5, 0.23]]
+        mtrk: [[mf6, 0.23]]
+        htrk: [[mf7, 0.213], [mf9, 0.213]]
+      airport: {matrix: mf10, to_airport_factor: 0.163, from_airport_factor: 0.163}
+      sov_vot_classes: {mf411: 5.175, mf421: 16.2, mf431: 48.0}
+      expected_sov_demand_model_total: 2125765
+    AM1:   # period 2, 6-7 am
+      tables:
+        sov:  [[mf412, 1.0], [mf422, 1.0], [mf432, 1.0], [mf8, 0.052]]
+        hov2: [[mf442, 1.0]]
+        hov3: [[mf452, 1.0]]
+        apv:  airport
+        btrk: [[mf4, 0.007]]
+        ltrk: [[mf5, 0.007]]
+        mtrk: [[mf6, 0.007]]
+        htrk: [[mf7, 0.044], [mf9, 0.044]]
+      airport: {matrix: mf10, to_airport_factor: 0.052, from_airport_factor: 0.052}
+      sov_vot_classes: {mf412: 5.175, mf422: 16.2, mf432: 48.0}
+      expected_sov_demand_model_total: 713749
+    AM2:   # period 3, 7-9 am
+      tables:
+        sov:  [[mf413, 1.0], [mf423, 1.0], [mf433, 1.0], [mf8, 0.127]]
+        hov2: [[mf443, 1.0]]
+        hov3: [[mf453, 1.0]]
+        apv:  airport
+        btrk: [[mf4, 0.016]]
+        ltrk: [[mf5, 0.016]]
+        mtrk: [[mf6, 0.016]]
+        htrk: [[mf7, 0.121], [mf9, 0.121]]
+      airport: {matrix: mf10, to_airport_factor: 0.127, from_airport_factor: 0.127}
+      sov_vot_classes: {mf413: 5.175, mf423: 16.2, mf433: 48.0}
+      expected_sov_demand_model_total: 2435234
+    AM3:   # period 4, 9-10 am
+      tables:
+        sov:  [[mf414, 1.0], [mf424, 1.0], [mf434, 1.0], [mf8, 0.051]]
+        hov2: [[mf444, 1.0]]
+        hov3: [[mf454, 1.0]]
+        apv:  airport
+        btrk: [[mf4, 0.016]]
+        ltrk: [[mf5, 0.016]]
+        mtrk: [[mf6, 0.016]]
+        htrk: [[mf7, 0.067], [mf9, 0.067]]
+      airport: {matrix: mf10, to_airport_factor: 0.051, from_airport_factor: 0.051}
+      sov_vot_classes: {mf414: 5.175, mf424: 16.2, mf434: 48.0}
+      expected_sov_demand_model_total: 669844
+    MD:   # period 5, 10 am-2 pm
+      tables:
+        sov:  [[mf415, 1.0], [mf425, 1.0], [mf435, 1.0], [mf8, 0.211]]
+        hov2: [[mf445, 1.0]]
+        hov3: [[mf455, 1.0]]
+        apv:  airport
+        btrk: [[mf4, 0.238]]
+        ltrk: [[mf5, 0.238]]
+        mtrk: [[mf6, 0.238]]
+        htrk: [[mf7, 0.266], [mf9, 0.266]]
+      airport: {matrix: mf10, to_airport_factor: 0.211, from_airport_factor: 0.211}
+      sov_vot_classes: {mf415: 5.175, mf425: 16.2, mf435: 48.0}
+      expected_sov_demand_model_total: 3481531
+    PM1:   # period 6, 2-4 pm
+      tables:
+        sov:  [[mf416, 1.0], [mf426, 1.0], [mf436, 1.0], [mf8, 0.133]]
+        hov2: [[mf446, 1.0]]
+        hov3: [[mf456, 1.0]]
+        apv:  airport
+        btrk: [[mf4, 0.165]]
+        ltrk: [[mf5, 0.165]]
+        mtrk: [[mf6, 0.165]]
+        htrk: [[mf7, 0.121], [mf9, 0.121]]
+      airport: {matrix: mf10, to_airport_factor: 0.133, from_airport_factor: 0.133}
+      sov_vot_classes: {mf416: 5.175, mf426: 16.2, mf436: 48.0}
+      expected_sov_demand_model_total: 2488477
+    PM2:   # period 7, 4-6 pm
+      tables:
+        sov:  [[mf417, 1.0], [mf427, 1.0], [mf437, 1.0], [mf8, 0.155]]
+        hov2: [[mf447, 1.0]]
+        hov3: [[mf457, 1.0]]
+        apv:  airport
+        btrk: [[mf4, 0.176]]
+        ltrk: [[mf5, 0.176]]
+        mtrk: [[mf6, 0.176]]
+        htrk: [[mf7, 0.103], [mf9, 0.103]]
+      airport: {matrix: mf10, to_airport_factor: 0.155, from_airport_factor: 0.155}
+      sov_vot_classes: {mf417: 5.175, mf427: 16.2, mf437: 48.0}
+      expected_sov_demand_model_total: 2351437
+    PM3:   # period 8, 6-8 pm
+      tables:
+        sov:  [[mf418, 1.0], [mf428, 1.0], [mf438, 1.0], [mf8, 0.109]]
+        hov2: [[mf448, 1.0]]
+        hov3: [[mf458, 1.0]]
+        apv:  airport
+        btrk: [[mf4, 0.152]]
+        ltrk: [[mf5, 0.152]]
+        mtrk: [[mf6, 0.152]]
+        htrk: [[mf7, 0.065], [mf9, 0.065]]
+      airport: {matrix: mf10, to_airport_factor: 0.109, from_airport_factor: 0.109}
+      sov_vot_classes: {mf418: 5.175, mf428: 16.2, mf438: 48.0}
+      expected_sov_demand_model_total: 1869515
   # tod_flags.in [C]: pflag (origin) = qflag (destination); >= 2 airport zones, 1 = CBD, 0 = other.
   # Airport rule: to an airport (qflag >= 2) or from an airport (pflag >= 2) to an unflagged zone.
   zone_flags:

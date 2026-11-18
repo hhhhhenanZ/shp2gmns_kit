@@ -11,7 +11,7 @@ put them in this folder.
 | [Database/macros/TOD_network_prep.py](https://github.com/CMAP-REPOS/cmap_trip-based_model/blob/e52b3185920b139fb77983a74458b05fa4923890/Database/macros/TOD_network_prep.py) | VDF capacity ul2 = 0.75 x `@emcap` x lanes x hours on VDF 1-5 |
 | [Database/data/vdf_tod.in](https://github.com/CMAP-REPOS/cmap_trip-based_model/blob/e52b3185920b139fb77983a74458b05fa4923890/Database/data/vdf_tod.in) | Emme functions fd1-fd8 as run |
 | [Database/macros/ttables.mac](https://github.com/CMAP-REPOS/cmap_trip-based_model/blob/e52b3185920b139fb77983a74458b05fa4923890/Database/macros/ttables.mac) | how the PM (period 7) trip tables are built |
-| [Database/data/tod_factors.p7](https://github.com/CMAP-REPOS/cmap_trip-based_model/blob/e52b3185920b139fb77983a74458b05fa4923890/Database/data/tod_factors.p7) | PM time-of-day factors for trucks and externals |
+| [Database/data/tod_factors.p7](https://github.com/CMAP-REPOS/cmap_trip-based_model/blob/e52b3185920b139fb77983a74458b05fa4923890/Database/data/tod_factors.p7) | PM time-of-day factors for trucks and externals; `tod_factors.p1` to `p8` in the same folder for the 8 periods (`--demand-only`) |
 | [Database/data/tod_flags.in](https://github.com/CMAP-REPOS/cmap_trip-based_model/blob/e52b3185920b139fb77983a74458b05fa4923890/Database/data/tod_flags.in) | CBD and airport zone flags |
 | [Database/macros/SOLA_assignment.py](https://github.com/CMAP-REPOS/cmap_trip-based_model/blob/e52b3185920b139fb77983a74458b05fa4923890/Database/macros/SOLA_assignment.py) | `@toll` added unchanged as link cost |
 

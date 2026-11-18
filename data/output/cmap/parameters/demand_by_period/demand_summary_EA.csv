@@ -1,0 +1,9 @@
+﻿mode_type,rule,total_vehicles,cells_positive,cells_written,vehicles_written,share_kept,vehicles_dropped,intrazonal_vehicles,file
+sov,1.0 x mf411 + 1.0 x mf421 + 1.0 x mf431 + 0.163 x mf8,2170012.3,840472,834940,2169984.1,1.0,28.2,356718.0,demand/EA/sov_EA.csv
+hov2,1.0 x mf441,516327.5,377603,377603,516327.5,1.0,0.0,68000.5,demand/EA/hov2_EA.csv
+hov3,1.0 x mf451,144128.0,223544,223544,144128.0,1.0,0.0,19219.4,demand/EA/hov3_EA.csv
+apv,mf10 x 0.163 to airport zones + x 0.163 from airport zones to unflagged zones,12449.7,28958,27034,12440.4,0.9992,9.4,0.0,demand/EA/apv_EA.csv
+btrk,0.23 x mf4,401928.8,13144250,1548492,390432.7,0.9714,11496.1,0.0,demand/EA/btrk_EA.csv
+ltrk,0.23 x mf5,67467.0,13144250,942424,51043.9,0.7566,16423.1,0.0,demand/EA/ltrk_EA.csv
+mtrk,0.23 x mf6,62814.1,13144250,875150,46918.6,0.7469,15895.5,0.0,demand/EA/mtrk_EA.csv
+htrk,0.213 x mf7 + 0.213 x mf9,124900.8,12893492,1054211,115132.9,0.9218,9767.9,0.0,demand/EA/htrk_EA.csv

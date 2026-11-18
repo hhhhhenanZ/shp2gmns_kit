@@ -1,8 +1,8 @@
 """CMAP PM vehicle OD tables -> one TAPLite demand file per mode_type.
 
 Built as CMAP's own ``Database/macros/ttables.mac`` builds the period tables [C], with the
-factors in ``region.cmap.yaml > demand`` (= tod_factors.p7 = [G] TOD conversion table).
-Work plan: CMAP_model/CMAP_OD_workplan.md.
+factors in ``region.cmap.yaml > demand`` (= tod_factors.p1-p8 = [G] TOD conversion table).
+Work plans: CMAP_model/CMAP_OD_workplan.md (PM), CMAP_OD_8periods_workplan.md (8 periods).
 
 Output ``demand/<P>/<mode_type>_<P>.csv``: ``o_zone_id,d_zone_id,volume``. Zone ids are
 CMAP zones 1-3649 (= centroid node_id). Volume = vehicles in the whole period (PM: 2 h).
@@ -27,18 +27,22 @@ class EmxReader:
     def __init__(self, zip_path: Path, zones: int):
         self.zip = zipfile.ZipFile(zip_path)
         self.n = zones
-        self.cache: dict[str, np.ndarray] = {}
         self.sizes: dict[str, int] = {}
+        self.sums: dict[str, float] = {}
 
     def __call__(self, name: str) -> np.ndarray:
-        if name not in self.cache:
-            raw = self.zip.read(f"{name}.emx")   # one member at a time
-            self.sizes[name] = len(raw)
-            arr = np.frombuffer(raw, dtype="<f4")
-            if arr.size != self.n * self.n:
-                raise ValueError(f"{name}.emx has {arr.size} values, expected {self.n}^2")
-            self.cache[name] = arr.reshape(self.n, self.n)   # stored as float32, as in the .emx
-        return self.cache[name].astype(np.float64)
+        # Read on every call and not kept, so one period fits in a few GB of memory.
+        raw = self.zip.read(f"{name}.emx")   # one member at a time
+        self.sizes[name] = len(raw)
+        arr = np.frombuffer(raw, dtype="<f4")   # stored as float32, as in the .emx
+        if arr.size != self.n * self.n:
+            raise ValueError(f"{name}.emx has {arr.size} values, expected {self.n}^2")
+        return arr.reshape(self.n, self.n).astype(np.float64)
+
+    def total(self, name: str) -> float:
+        if name not in self.sums:
+            self.sums[name] = float(self(name).sum())
+        return self.sums[name]
 
 
 def flags(cfg: dict, n: int) -> np.ndarray:
@@ -50,42 +54,51 @@ def flags(cfg: dict, n: int) -> np.ndarray:
     return f
 
 
-def build_tables(cfg: dict, period: str, emx: EmxReader) -> tuple[dict, dict]:
+def build_table(cfg: dict, period: str, mode: str, emx: EmxReader) -> tuple[np.ndarray, str]:
     pc = cfg["periods"][period]
+    spec = pc["tables"][mode]
+    if spec == "airport":
+        a = pc["airport"]
+        f = flags(cfg, emx.n)
+        mat = emx(a["matrix"])
+        to_air = (f[None, :] >= 2)
+        from_air = (f[:, None] >= 2) & (f[None, :] == 0)
+        table = mat * to_air * a["to_airport_factor"] + mat * from_air * a["from_airport_factor"]
+        note = (f"{a['matrix']} x {a['to_airport_factor']} to airport zones + "
+                f"x {a['from_airport_factor']} from airport zones to unflagged zones")
+        return table, note
+    return sum(emx(m) * float(k) for m, k in spec), " + ".join(f"{k} x {m}" for m, k in spec)
+
+
+def build_tables(cfg: dict, period: str, emx: EmxReader) -> tuple[dict, dict]:
     tables, notes = {}, {}
-    for mode, spec in pc["tables"].items():
-        if spec == "airport":
-            a = pc["airport"]
-            f = flags(cfg, emx.n)
-            mat = emx(a["matrix"])
-            to_air = (f[None, :] >= 2)
-            from_air = (f[:, None] >= 2) & (f[None, :] == 0)
-            tables[mode] = mat * to_air * a["to_airport_factor"] + mat * from_air * a["from_airport_factor"]
-            notes[mode] = (f"{a['matrix']} x {a['to_airport_factor']} to airport zones + "
-                           f"x {a['from_airport_factor']} from airport zones to unflagged zones")
-        else:
-            tables[mode] = sum(emx(m) * float(k) for m, k in spec)
-            notes[mode] = " + ".join(f"{k} x {m}" for m, k in spec)
+    for mode in cfg["periods"][period]["tables"]:
+        tables[mode], notes[mode] = build_table(cfg, period, mode, emx)
     return tables, notes
+
+
+def vot_classes(cfg: dict, period: str) -> dict:
+    """SOV VOT1-3 matrices of the period (mf41y, mf42y, mf43y) and their VOT."""
+    return cfg["periods"][period].get("sov_vot_classes", cfg["sov_vot_classes"])
 
 
 def sov_vot(cfg: dict, period: str, emx: EmxReader) -> float:
     pc = cfg["periods"][period]
-    vots = cfg["sov_vot_classes"]
+    vots = vot_classes(cfg, period)
     split = cfg["external_vot_split"]
-    ext = sum(emx(m).sum() * float(k) for m, k in pc["tables"]["sov"] if m not in vots)
-    weights = {m: emx(m).sum() + ext * s for m, s in zip(vots, split)}
+    ext = sum(emx.total(m) * float(k) for m, k in pc["tables"]["sov"] if m not in vots)
+    weights = {m: emx.total(m) + ext * s for m, s in zip(vots, split)}
     return sum(weights[m] * vots[m] for m in vots) / sum(weights.values())
 
 
 def write(cfg: dict, region, period: str, out: Path, bom: bool) -> dict:
     emx = EmxReader(region.path(cfg["emmemat_zip"]), int(cfg["zones"]))
     floor = float(cfg["min_volume"])
-    tables, notes = build_tables(cfg, period, emx)
     folder = out / "demand" / period
     folder.mkdir(parents=True, exist_ok=True)
-    rows = []
-    for mode, mat in tables.items():
+    rows, notes = [], {}
+    for mode in cfg["periods"][period]["tables"]:   # one table in memory at a time
+        mat, notes[mode] = build_table(cfg, period, mode, emx)
         keep = mat > floor
         o, d = np.nonzero(keep)
         frame = pd.DataFrame({"o_zone_id": o + 1, "d_zone_id": d + 1, "volume": mat[o, d]})
@@ -100,6 +113,7 @@ def write(cfg: dict, region, period: str, out: Path, bom: bool) -> dict:
             "vehicles_dropped": round(total - kept, 1),
             "intrazonal_vehicles": round(float(np.trace(mat)), 1), "file": str(path.relative_to(out)),
         })
+        del mat, keep, o, d, frame
     summary = pd.DataFrame(rows)
     vot_sov = round(sov_vot(cfg, period, emx), 2)
     mode_types = []
@@ -109,7 +123,7 @@ def write(cfg: dict, region, period: str, out: Path, bom: bool) -> dict:
                            "pce": m["pce"], "occ": m["occ"],
                            "demand_file": f"{m['mode_type']}_{period}.csv"})
     pc = cfg["periods"][period]
-    sov_model = sum(emx(m).sum() for m in cfg["sov_vot_classes"])
+    sov_model = sum(emx.total(m) for m in vot_classes(cfg, period))
     return {"summary": summary, "mode_types": pd.DataFrame(mode_types),
             "sizes": dict(emx.sizes), "floor": floor,
             "sov_demand_model_total": float(sov_model),

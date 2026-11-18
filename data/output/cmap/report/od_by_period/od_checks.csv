@@ -1,0 +1,29 @@
+check,period,value,expected,pass
+SOV mf41y+mf42y+mf43y = trip_roster mode 1,EA,2125765.0,2125765.0,True
+every matrix 3649 x 3649 float32,EA,12.0,12.0,True
+SOV mf41y+mf42y+mf43y = trip_roster mode 1,AM1,713749.0,713749.0,True
+every matrix 3649 x 3649 float32,AM1,12.0,12.0,True
+SOV mf41y+mf42y+mf43y = trip_roster mode 1,AM2,2435234.0,2435234.0,True
+every matrix 3649 x 3649 float32,AM2,12.0,12.0,True
+SOV mf41y+mf42y+mf43y = trip_roster mode 1,AM3,669844.0,669844.0,True
+every matrix 3649 x 3649 float32,AM3,12.0,12.0,True
+SOV mf41y+mf42y+mf43y = trip_roster mode 1,MD,3481531.0,3481531.0,True
+every matrix 3649 x 3649 float32,MD,12.0,12.0,True
+SOV mf41y+mf42y+mf43y = trip_roster mode 1,PM1,2488477.0,2488477.0,True
+every matrix 3649 x 3649 float32,PM1,12.0,12.0,True
+SOV mf41y+mf42y+mf43y = trip_roster mode 1,PM2,2351437.0,2351437.0,True
+every matrix 3649 x 3649 float32,PM2,12.0,12.0,True
+SOV mf41y+mf42y+mf43y = trip_roster mode 1,PM3,1869515.0,1869515.0,True
+every matrix 3649 x 3649 float32,PM3,12.0,12.0,True
+PM2 file identical to the earlier PM file,PM2 sov,1.0,1.0,True
+PM2 file identical to the earlier PM file,PM2 hov2,1.0,1.0,True
+PM2 file identical to the earlier PM file,PM2 hov3,1.0,1.0,True
+PM2 file identical to the earlier PM file,PM2 apv,1.0,1.0,True
+PM2 file identical to the earlier PM file,PM2 btrk,1.0,1.0,True
+PM2 file identical to the earlier PM file,PM2 ltrk,1.0,1.0,True
+PM2 file identical to the earlier PM file,PM2 mtrk,1.0,1.0,True
+PM2 file identical to the earlier PM file,PM2 htrk,1.0,1.0,True
+btrk: sum over 8 periods = daily mf4 (factors sum to 1),all,1747516.5,1747516.6,True
+ltrk: sum over 8 periods = daily mf5 (factors sum to 1),all,293335.0,293335.0,True
+mtrk: sum over 8 periods = daily mf6 (factors sum to 1),all,273104.7,273104.7,True
+htrk: sum over 8 periods = daily mf7+mf9 (factors sum to 1),all,586388.6,586388.7,True

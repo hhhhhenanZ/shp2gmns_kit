@@ -1,0 +1,65 @@
+period,cmap_period,hours,mode_type,rule,total_vehicles,cells_positive,cells_written,vehicles_written,share_kept,vehicles_dropped,intrazonal_vehicles,file
+EA,1,8pm-6am,sov,1.0 x mf411 + 1.0 x mf421 + 1.0 x mf431 + 0.163 x mf8,2170012.3,840472,834940,2169984.1,1.0,28.2,356718.0,demand/EA/sov_EA.csv
+EA,1,8pm-6am,hov2,1.0 x mf441,516327.5,377603,377603,516327.5,1.0,0.0,68000.5,demand/EA/hov2_EA.csv
+EA,1,8pm-6am,hov3,1.0 x mf451,144128.0,223544,223544,144128.0,1.0,0.0,19219.4,demand/EA/hov3_EA.csv
+EA,1,8pm-6am,apv,mf10 x 0.163 to airport zones + x 0.163 from airport zones to unflagged zones,12449.7,28958,27034,12440.4,0.9992,9.4,0.0,demand/EA/apv_EA.csv
+EA,1,8pm-6am,btrk,0.23 x mf4,401928.8,13144250,1548492,390432.7,0.9714,11496.1,0.0,demand/EA/btrk_EA.csv
+EA,1,8pm-6am,ltrk,0.23 x mf5,67467.0,13144250,942424,51043.9,0.7566,16423.1,0.0,demand/EA/ltrk_EA.csv
+EA,1,8pm-6am,mtrk,0.23 x mf6,62814.1,13144250,875150,46918.6,0.7469,15895.5,0.0,demand/EA/mtrk_EA.csv
+EA,1,8pm-6am,htrk,0.213 x mf7 + 0.213 x mf9,124900.8,12893492,1054211,115132.9,0.9218,9767.9,0.0,demand/EA/htrk_EA.csv
+AM1,2,6-7am,sov,1.0 x mf412 + 1.0 x mf422 + 1.0 x mf432 + 0.052 x mf8,727864.7,493827,477431,727784.4,0.9999,80.3,70674.0,demand/AM1/sov_AM1.csv
+AM1,2,6-7am,hov2,1.0 x mf442,95035.5,108763,108763,95035.5,1.0,0.0,14387.5,demand/AM1/hov2_AM1.csv
+AM1,2,6-7am,hov3,1.0 x mf452,27455.2,58117,58117,27455.2,1.0,0.0,4698.6,demand/AM1/hov3_AM1.csv
+AM1,2,6-7am,apv,mf10 x 0.052 to airport zones + x 0.052 from airport zones to unflagged zones,3971.7,28958,23294,3944.5,0.9931,27.2,0.0,demand/AM1/apv_AM1.csv
+AM1,2,6-7am,btrk,0.007 x mf4,12232.6,13144250,160371,9473.8,0.7745,2758.8,0.0,demand/AM1/btrk_AM1.csv
+AM1,2,6-7am,ltrk,0.007 x mf5,2053.3,13144250,17081,613.3,0.2987,1440.1,0.0,demand/AM1/ltrk_AM1.csv
+AM1,2,6-7am,mtrk,0.007 x mf6,1911.7,13144250,15723,561.4,0.2936,1350.4,0.0,demand/AM1/mtrk_AM1.csv
+AM1,2,6-7am,htrk,0.044 x mf7 + 0.044 x mf9,25801.1,12893492,357427,20643.1,0.8001,5158.0,0.0,demand/AM1/htrk_AM1.csv
+AM2,3,7-9am,sov,1.0 x mf413 + 1.0 x mf423 + 1.0 x mf433 + 0.127 x mf8,2469708.9,928723,921715,2469673.8,1.0,35.1,302861.0,demand/AM2/sov_AM2.csv
+AM2,3,7-9am,hov2,1.0 x mf443,369562.5,282685,282685,369562.5,1.0,0.0,62239.0,demand/AM2/hov2_AM2.csv
+AM2,3,7-9am,hov3,1.0 x mf453,105550.6,161898,161898,105550.6,1.0,0.0,18983.6,demand/AM2/hov3_AM2.csv
+AM2,3,7-9am,apv,mf10 x 0.127 to airport zones + x 0.127 from airport zones to unflagged zones,9700.1,28958,26534,9688.3,0.9988,11.7,0.0,demand/AM2/apv_AM2.csv
+AM2,3,7-9am,btrk,0.016 x mf4,27960.3,13144250,307568,23868.1,0.8536,4092.1,0.0,demand/AM2/btrk_AM2.csv
+AM2,3,7-9am,ltrk,0.016 x mf5,4693.4,13144250,46226,1827.2,0.3893,2866.2,0.0,demand/AM2/ltrk_AM2.csv
+AM2,3,7-9am,mtrk,0.016 x mf6,4369.7,13144250,42436,1672.8,0.3828,2696.9,0.0,demand/AM2/mtrk_AM2.csv
+AM2,3,7-9am,htrk,0.121 x mf7 + 0.121 x mf9,70953.0,12893492,734531,62996.9,0.8879,7956.2,0.0,demand/AM2/htrk_AM2.csv
+AM3,4,9-10am,sov,1.0 x mf414 + 1.0 x mf424 + 1.0 x mf434 + 0.051 x mf8,683688.2,439121,422445,683606.7,0.9999,81.5,100205.0,demand/AM3/sov_AM3.csv
+AM3,4,9-10am,hov2,1.0 x mf444,136656.0,142766,142766,136656.0,1.0,0.0,21503.0,demand/AM3/hov2_AM3.csv
+AM3,4,9-10am,hov3,1.0 x mf454,37197.5,77064,77064,37197.5,1.0,0.0,5751.4,demand/AM3/hov3_AM3.csv
+AM3,4,9-10am,apv,mf10 x 0.051 to airport zones + x 0.051 from airport zones to unflagged zones,3895.3,28958,23190,3867.6,0.9929,27.7,0.0,demand/AM3/apv_AM3.csv
+AM3,4,9-10am,btrk,0.016 x mf4,27960.3,13144250,307568,23868.1,0.8536,4092.1,0.0,demand/AM3/btrk_AM3.csv
+AM3,4,9-10am,ltrk,0.016 x mf5,4693.4,13144250,46226,1827.2,0.3893,2866.2,0.0,demand/AM3/ltrk_AM3.csv
+AM3,4,9-10am,mtrk,0.016 x mf6,4369.7,13144250,42436,1672.8,0.3828,2696.9,0.0,demand/AM3/mtrk_AM3.csv
+AM3,4,9-10am,htrk,0.067 x mf7 + 0.067 x mf9,39288.0,12893492,489731,33063.3,0.8416,6224.8,0.0,demand/AM3/htrk_AM3.csv
+MD,5,10am-2pm,sov,1.0 x mf415 + 1.0 x mf425 + 1.0 x mf435 + 0.211 x mf8,3538808.2,1016012,1011716,3538785.8,1.0,22.3,587468.0,demand/MD/sov_MD.csv
+MD,5,10am-2pm,hov2,1.0 x mf445,731657.0,435188,435188,731657.0,1.0,0.0,125320.0,demand/MD/hov2_MD.csv
+MD,5,10am-2pm,hov3,1.0 x mf455,195836.4,256877,256877,195836.4,1.0,0.0,32690.3,demand/MD/hov3_MD.csv
+MD,5,10am-2pm,apv,mf10 x 0.211 to airport zones + x 0.211 from airport zones to unflagged zones,16115.9,28958,27432,16108.3,0.9995,7.6,0.0,demand/MD/apv_MD.csv
+MD,5,10am-2pm,btrk,0.238 x mf4,415908.9,13144250,1576987,404302.9,0.9721,11606.0,0.0,demand/MD/btrk_MD.csv
+MD,5,10am-2pm,ltrk,0.238 x mf5,69813.7,13144250,974696,53147.6,0.7613,16666.1,0.0,demand/MD/ltrk_MD.csv
+MD,5,10am-2pm,mtrk,0.238 x mf6,64998.9,13144250,905615,48860.5,0.7517,16138.4,0.0,demand/MD/mtrk_MD.csv
+MD,5,10am-2pm,htrk,0.266 x mf7 + 0.266 x mf9,155979.4,12893492,1206767,145486.2,0.9327,10493.2,0.0,demand/MD/htrk_MD.csv
+PM1,6,2-4pm,sov,1.0 x mf416 + 1.0 x mf426 + 1.0 x mf436 + 0.133 x mf8,2524580.6,869014,862308,2524547.0,1.0,33.6,391261.0,demand/PM1/sov_PM1.csv
+PM1,6,2-4pm,hov2,1.0 x mf446,466215.5,314789,314789,466215.5,1.0,0.0,81896.5,demand/PM1/hov2_PM1.csv
+PM1,6,2-4pm,hov3,1.0 x mf456,126215.4,183351,183351,126215.4,1.0,0.0,22253.3,demand/PM1/hov3_PM1.csv
+PM1,6,2-4pm,apv,mf10 x 0.133 to airport zones + x 0.133 from airport zones to unflagged zones,10158.4,28958,26624,10147.0,0.9989,11.4,0.0,demand/PM1/apv_PM1.csv
+PM1,6,2-4pm,btrk,0.165 x mf4,288340.2,13144250,1292279,277922.4,0.9639,10417.8,0.0,demand/PM1/btrk_PM1.csv
+PM1,6,2-4pm,ltrk,0.165 x mf5,48400.3,13144250,671794,34333.5,0.7094,14066.8,0.0,demand/PM1/ltrk_PM1.csv
+PM1,6,2-4pm,mtrk,0.165 x mf6,45062.3,13144250,621056,31514.0,0.6993,13548.3,0.0,demand/PM1/mtrk_PM1.csv
+PM1,6,2-4pm,htrk,0.121 x mf7 + 0.121 x mf9,70953.0,12893492,734531,62996.9,0.8879,7956.2,0.0,demand/PM1/htrk_PM1.csv
+PM2,7,4-6pm,sov,1.0 x mf417 + 1.0 x mf427 + 1.0 x mf437 + 0.155 x mf8,2393512.6,824711,818885,2393483.0,1.0,29.7,385258.0,demand/PM2/sov_PM2.csv
+PM2,7,4-6pm,hov2,1.0 x mf447,513112.0,342932,342932,513112.0,1.0,0.0,84068.5,demand/PM2/hov2_PM2.csv
+PM2,7,4-6pm,hov3,1.0 x mf457,141611.8,204014,204014,141611.8,1.0,0.0,22885.3,demand/PM2/hov3_PM2.csv
+PM2,7,4-6pm,apv,mf10 x 0.155 to airport zones + x 0.155 from airport zones to unflagged zones,11838.7,28958,26944,11828.9,0.9992,9.8,0.0,demand/PM2/apv_PM2.csv
+PM2,7,4-6pm,btrk,0.176 x mf4,307562.9,13144250,1338781,296930.8,0.9654,10632.1,0.0,demand/PM2/btrk_PM2.csv
+PM2,7,4-6pm,ltrk,0.176 x mf5,51627.0,13144250,718863,37108.4,0.7188,14518.6,0.0,demand/PM2/ltrk_PM2.csv
+PM2,7,4-6pm,mtrk,0.176 x mf6,48066.4,13144250,664820,34066.9,0.7087,13999.6,0.0,demand/PM2/mtrk_PM2.csv
+PM2,7,4-6pm,htrk,0.103 x mf7 + 0.103 x mf9,60398.0,12893492,659707,52935.2,0.8764,7462.8,0.0,demand/PM2/htrk_PM2.csv
+PM3,8,6-8pm,sov,1.0 x mf418 + 1.0 x mf428 + 1.0 x mf438 + 0.109 x mf8,1899103.7,746993,738887,1899063.4,1.0,40.3,306463.0,demand/PM3/sov_PM3.csv
+PM3,8,6-8pm,hov2,1.0 x mf448,446877.0,331668,331668,446877.0,1.0,0.0,62943.0,demand/PM3/hov2_PM3.csv
+PM3,8,6-8pm,hov3,1.0 x mf458,126113.7,197077,197077,126113.7,1.0,0.0,17773.8,demand/PM3/hov3_PM3.csv
+PM3,8,6-8pm,apv,mf10 x 0.109 to airport zones + x 0.109 from airport zones to unflagged zones,8325.3,28958,26128,8311.4,0.9983,13.8,0.0,demand/PM3/apv_PM3.csv
+PM3,8,6-8pm,btrk,0.152 x mf4,265622.5,13144250,1235588,255481.4,0.9618,10141.1,0.0,demand/PM3/btrk_PM3.csv
+PM3,8,6-8pm,ltrk,0.152 x mf5,44586.9,13144250,616103,31094.0,0.6974,13492.9,0.0,demand/PM3/ltrk_PM3.csv
+PM3,8,6-8pm,mtrk,0.152 x mf6,41511.9,13144250,569483,28536.1,0.6874,12975.8,0.0,demand/PM3/mtrk_PM3.csv
+PM3,8,6-8pm,htrk,0.065 x mf7 + 0.065 x mf9,38115.3,12893492,479024,31970.8,0.8388,6144.4,0.0,demand/PM3/htrk_PM3.csv

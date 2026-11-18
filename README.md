@@ -81,7 +81,8 @@ assignment inputs, the TAPLite build, the run scripts and the evaluation are in
 
 **Option A: use the converted network and demand.** Download `cmap_PM_gmns.zip` from this repository's
 [Releases](https://github.com/hhhhhenanZ/shp2gmns_kit/releases) and unzip it in the repository folder. It fills
-`data/output/cmap/network/` and `data/output/cmap/demand/PM/` (about 107 MB unzipped).
+`data/output/cmap/network/` and `data/output/cmap/demand/PM/` (about 107 MB unzipped). The OD of the 8 periods
+(`demand/<period>/`, about 515 MB unzipped) can be rebuilt with Option B and `--demand-only`.
 
 **Option B: rebuild from CMAP's files.** Download the c25q4 package from the CMAP Data Hub (link above) and put:
 
@@ -107,6 +108,26 @@ python code\main_convert.py --region region.cmap.yaml --periods PM
 The result is `data/output/cmap/network/PM/node.csv` and `link.csv`, plus `demand/PM/<mode>_PM.csv`. Read
 `data/output/cmap/CONVERSION_REPORT.md` and `checks/gate_report.csv` first. All rules, units and references are
 in `region.cmap.yaml`.
+
+**OD for all 8 CMAP periods (OD only, no network).** CMAP exports network shapefiles for AM and PM only, so the
+other periods are built without the network:
+
+```bat
+python code\main_convert.py --region region.cmap.yaml --demand-only                     :: EA AM1 AM2 AM3 MD PM1 PM2 PM3
+python code\main_convert.py --region region.cmap.yaml --demand-only --periods AM2       :: one period
+```
+
+| Period | EA | AM1 | AM2 | AM3 | MD | PM1 | PM2 | PM3 |
+|---|---|---|---|---|---|---|---|---|
+| CMAP period | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 |
+| Hours | 8 pm-6 am | 6-7 am | 7-9 am | 9-10 am | 10 am-2 pm | 2-4 pm | 4-6 pm | 6-8 pm |
+
+Autos are CMAP's period tables mf41y-mf45y; trucks, externals and airport trips are the daily tables times
+`tod_factors.p1`-`p8` (= the data user guide's time-of-day table). Output: `demand/<period>/<mode>_<period>.csv`
+(vehicles in the period) and `parameters/demand_by_period/` (per period: totals, kept share, check of SOV against
+`trip_roster`). PM2 gives the same files as PM. Summary and checks of the 8 periods:
+[`report/od_by_period/`](data/output/cmap/report/od_by_period/) (`od_by_period.xlsx`, `od_by_period.png`,
+`od_checks.csv`).
 
 | Item | Rule |
 |---|---|
