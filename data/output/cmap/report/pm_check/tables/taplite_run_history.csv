@@ -1,0 +1,6 @@
+run,date,change,VMT_ratio,VHT_ratio,source
+BPR,2026-11-06,"BPR 0.15/4, no tolls",0.925,0.71,CMAP_progress_report.tex section 5
+R1,2026-11-20,"CMAP fd1-fd8, ul2",0.9649,0.9371,task_C3_taplite_allmodes/outputs/R1_by_vdf.csv
+R2,2026-11-20,+ car toll,0.9635,0.9349,task_C3_taplite_allmodes/outputs/R2_by_vdf.csv
+R3,2026-11-22,+ full truck OD,0.9905,0.9822,A5_arterial_gap/outputs/a5_r4_by_vdf.csv
+R4,2026-11-22,"+ class tolls, bus",0.9923,0.98,A5_arterial_gap/outputs/a5_r4_by_vdf.csv

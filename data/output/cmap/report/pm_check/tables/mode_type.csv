@@ -1,0 +1,6 @@
+mode_type_id,mode_type,name,vot,pce,occ,demand_file
+1,car,sov + hov2 + hov3 + apv,31.5,1.0,1.0,demand_car.csv
+2,btrk,B-plate truck,24.0,1.0,1.0,demand_btrk.csv
+3,ltrk,light truck,32.0,1.0,1.0,demand_ltrk.csv
+4,mtrk,medium truck,47.0,2.0,1.0,demand_mtrk.csv
+5,htrk,heavy truck,52.0,3.0,1.0,demand_htrk.csv

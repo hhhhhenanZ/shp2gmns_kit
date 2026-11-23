@@ -30,3 +30,8 @@ runs/
 
 # Per-link period capacity table (about 48 MB): regenerate with data/output/cmap/report/period_capacity/period_capacity.py
 data/output/cmap/report/period_capacity/cmap_link_period_capacity_c25q4_100.csv
+
+# PM check: link-level tables with CMAP class volumes, and beamer build files
+data/output/cmap/report/pm_check/tables/link_level/
+*.nav
+*.snm

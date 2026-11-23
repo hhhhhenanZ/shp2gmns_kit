@@ -1,0 +1,5 @@
+mode_type,rule,floor,total_vehicles,cells_written,vehicles_written,share_kept
+btrk,0.176 x mf4,0.0001,307562.9,7708061,307425.2,0.99955
+ltrk,0.176 x mf5,0.0001,51627.0,10136227,51504.8,0.99763
+mtrk,0.176 x mf6,0.0001,48066.4,10000073,47939.7,0.99736
+htrk,0.103 x mf7 + 0.103 x mf9,0.0001,60398.0,6049766,60238.7,0.99736
