@@ -27,3 +27,6 @@ data/output/cmap/demand/
 data/output/**/runs/
 data/output/**/analysis/
 runs/
+
+# Per-link period capacity table (about 48 MB): regenerate with data/output/cmap/report/period_capacity/period_capacity.py
+data/output/cmap/report/period_capacity/cmap_link_period_capacity_c25q4_100.csv
