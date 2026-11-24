@@ -8,6 +8,10 @@ Part 2 (assignment check): TAPLite R4 (CMAP fd1-fd8, ul2, class tolls, bus prelo
 Units: CMAP class columns are vehicle equivalents (veq): medium x2, heavy x3, bus x3. Vehicles (= @vadt) =
 auto + HOV2 + HOV3 + B-plate + light + medium/2 + heavy/3 (no bus). V in the link-time functions = all classes + busveq (veq).
 VMT = vehicles x length; VHT = vehicles x time / 60 (no bus, as in CMAP @vadt).
+Corridor link list (Nov 24, 2026): the 77 TMC rows are read from the A2 v5 sheet, with the corrected TMC -> CMAP link
+mapping of A4_truck_share/inputs/tmc_cmap_link_override.csv applied (TMC 107+04262, sheet row 68: 21409-21370, the
+auto-only reversible link, -> 21382-21380, the Kennedy mainline link; same link as corridor sheet v6 row 68).
+The v5 sheet is not edited.
 Usage: python a8_1_tables.py <ROOT>   (ROOT = materails_tensor_city_1005)
 """
 import io, os, sys, zipfile
@@ -80,9 +84,16 @@ sh = []
 for r in ws.iter_rows(min_row=2, values_only=True):
     if r[2]: sh.append(dict(sheet_row=r[0], tmc=r[1], cmap_id=str(r[2])))
 sh = pd.DataFrame(sh)
+OVR = pd.read_csv(os.path.join(A, "A4_truck_share", "inputs", "tmc_cmap_link_override.csv"), dtype=str)
+for o in OVR.itertuples():   # corrected TMC -> CMAP link mapping (Nov 24)
+    m = (sh.tmc == o.tmc) & (sh.cmap_id == o.cmap_id_v5)
+    assert m.sum() == 1, f"override row for {o.tmc} not found"
+    sh.loc[m, "cmap_id"] = o.cmap_id_new
+    say(f"override: TMC {o.tmc} (sheet row {o.sheet_road_order}) {o.cmap_id_v5} -> {o.cmap_id_new}")
 say(f"corridor sheet: {len(sh)} TMC rows, {sh.cmap_id.nunique()} CMAP links")
 cols = ["cmap_id", "vdf", "facility", "length_mi", "lanes", "ul1", "ul2", "avauv", "avh2v", "avh3v", "avbqv", "avlqv", "avmqv", "avhqv", "busveq",
         "vadt", "V_real", "x_real", "timau", "t_real", "ratio_real"]
+assert set(sh.cmap_id) == set(a4.cmap_id), "corridor sheet links differ from the A4 link table"
 CL = a4.merge(D[cols], on="cmap_id", how="left").sort_values("road_order")
 CL["VMT_CMAP"] = CL.vadt * CL.length_mi
 CL["VHT_CMAP"] = CL.vadt * CL.timau / 60
