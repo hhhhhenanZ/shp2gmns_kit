@@ -24,7 +24,7 @@ Deck: `CMAP_PM_check_deck.pdf` (source `CMAP_PM_check_deck.tex`, build with `xel
 | `tables/mode_type.csv`, `settings.csv` | TAPLite classes (VOT, PCE, demand file) and settings of R4 |
 | `tables/truck_demand_summary.csv` | Truck OD: rule, total vehicles, cells written, share kept (floor 1e-4 veh) |
 | `tables/cmap_period_capacity_rules.csv` | CMAP period capacity rule for the 8 periods (same file as `../period_capacity/`) |
-| `scripts/a8_1_tables.py`, `a8_2_figs.py`, `cmap_vdf.py` | Scripts that made the tables and figures, and our Python version of CMAP's fd1-fd8. They ran in the project workspace (paths in each script's header); kept here as the record of the method. Since Nov 24, 2026, `a8_1_tables.py` reads the corridor's TMC-to-CMAP-link list with one correction: TMC 107+04262 uses the Kennedy mainline link 21382-21380, not the reversible link 21409-21370 (Figure 3 and the corridor tables were remade; all 55 links still within 0.19 %). |
+| `scripts/a8_1_tables.py`, `a8_2_figs.py`, `cmap_vdf.py` | Scripts that made the tables and figures, and our Python version of CMAP's fd1-fd8. They ran in the project workspace (paths in each script's header); kept here as the record of the method. |
 | `scripts/fig_run_history.py` | Figure 7 from `tables/taplite_run_history.csv` |
 
 ## Definitions
