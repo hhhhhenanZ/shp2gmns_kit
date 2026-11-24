@@ -18,6 +18,7 @@ Deck: `CMAP_PM_check_deck.pdf` (source `CMAP_PM_check_deck.tex`, build with `xel
 | `tables/a8_part1_cmap_selfcheck_by_facility.csv` | Self-check by vdf: links, share of links with time within 1 % / 5 % of timau, VMT and VHT (ours and CMAP) |
 | `tables/a8_part2_taplite_vmt_vht_by_facility.csv` | TAPLite vs CMAP by facility group: VMT, VHT, ratios, share of links with time within 5 %, median time ratio |
 | `tables/a8_part2_taplite_class_volume_by_facility.csv` | TAPLite vs CMAP by facility group and vehicle class: VMT and ratio, link-volume R², % RMSE, share within 10 % (links with CMAP volume >= 100), share with GEH < 5 (hourly flows) |
+| `tables/a8_network_by_facility_pm_daily.csv` | Network totals by facility: PM VHT (CMAP's @pvht formula, ours vs CMAP), daily VMT and VHT (published daily @vadt and @vht vs the sum of our 8 periods) |
 | `tables/taplite_run_history.csv` | Network VMT and VHT ratio of each TAPLite run (BPR of Nov 6, R1-R4), with sources |
 | `tables/taplite_R4_run_info.csv` | R4 and two variants (R4a without bus preload, R4b without class tolls): wall time, memory, iterations, last gap, engine md5 |
 | `tables/mode_type.csv`, `settings.csv` | TAPLite classes (VOT, PCE, demand file) and settings of R4 |
@@ -28,9 +29,10 @@ Deck: `CMAP_PM_check_deck.pdf` (source `CMAP_PM_check_deck.tex`, build with `xel
 
 ## Definitions
 
+- @pvht: In CMAP's macro vht.summary_v3_7c.mac, @pvht is the *period* VHT (the "p" stands for period, not PM): the macro computes it for each of the 8 periods (lines 8 and 181) and adds the 8 periods into the daily @vht (from line 283). @pvht is not in CMAP's exported files, so we compute it with the macro's formula, vehicles (auto + B-plate + light + medium / 2 + heavy / 3 + bus / 3) x timau / 60. Check: the sum of this quantity over the 8 periods equals CMAP's published daily @vht (ratio 1.0000). "PM VHT" here means @pvht of period 7 (4-6 pm).
 - CMAP class volumes are vehicle equivalents (medium x2, heavy x3, bus x3). Vehicles = auto + HOV2 + HOV3 + B-plate + light + medium / 2 + heavy / 3 = CMAP's `@vadt` (no buses).
 - V in the link-time functions = all classes + bus (veq), as CMAP's `el1 + el2`.
-- VMT = vehicles x length (mi); VHT = vehicles x time (min) / 60; buses not counted.
+- VMT = vehicles x length (mi); VHT = vehicles x time (min) / 60. Buses are not counted in the self-check and TAPLite tables; the network-by-facility table (a8_network_by_facility_pm_daily.csv) follows CMAP's @pvht and @vht and includes bus / 3.
 - GEH on hourly flows: sqrt(2 (m - c)^2 / (m + c)), m = TAPLite, c = CMAP.
 
 ## Not in this repository
